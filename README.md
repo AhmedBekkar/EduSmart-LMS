@@ -147,11 +147,11 @@ Navigate to the root of the web project and open `Web.config`. Update the `<conn
 4. Press `F5` to build and launch the application via IIS Express.
 
 ### Default Test Credentials
-| Role | Username | Password |
+| Role | Email | Password |
 | :--- | :--- | :--- |
-| **Admin** | `admin` | `admin123` |
-| **Teacher** | `teacher1` | `password` |
-| **Student** | `student1` | `password` |
+| **Admin** | `ali@edusmart.com` | `12345` |
+| **Teacher** | `ali@edusmart.com` | `12345` |
+| **Student** | `mehmet@ogr.com` | `12345` |
 
 *(Note: Passwords in the database are hashed using PBKDF2)*
 
