@@ -161,15 +161,15 @@ Navigate to the root of the web project and open `Web.config`. Update the `<conn
 
 | Admin Dashboard | Analytics Dashboard | Users Management |
 | :---: | :---: | :---: |
-| ![Dashboard](docs/admin-dashboard.png) | ![Analytics](docs/analytics-dashboard.png) | ![Users](docs/users-management.png) |
+| ![Dashboard](EduSmart/docs/admin-dashboard.png) | ![Analytics](EduSmart/docs/analytics-dashboard.png) | ![Users](EduSmart/docs/users-management.png) |
 
 | Assignments | Risk Analysis | Add Assignment |
 | :---: | :---: | :---: |
-| ![Assignments](docs/assignments-list.png) | ![Risk](docs/risk-analysis.png) | ![Add](docs/add-assignment.png) |
+| ![Assignments](EduSmart/docs/assignments-list.png) | ![Risk](EduSmart/docs/risk-analysis.png) | ![Add](EduSmart/docs/add-assignment.png) |
 
 | Delete Modal | Exam Results & Chat | Login Page |
 | :---: | :---: | :---: |
-| ![Delete](docs/delete-assignment-modal.png) | ![Exam](docs/exam-results-chat.png) | ![Login](docs/login-page.png) |
+| ![Delete](EduSmart/docs/delete-assignment-modal.png) | ![Exam](EduSmart/docs/exam-results-chat.png) | ![Login](EduSmart/docs/login-page.png) |
 ---
 
 ## 📁 Project Structure
