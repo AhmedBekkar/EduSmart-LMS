@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="4c4c951cff4a45c18a69ea3b73af9369" Name="Diagram1" ZoomLevel="64">
+        <EntityTypeShape EntityType="EduSmart_DBModel.Dersler" Width="1.5" PointX="3" PointY="5" IsExpanded="true" />
+        <EntityTypeShape EntityType="EduSmart_DBModel.Kayitlar" Width="1.5" PointX="5.25" PointY="4.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="EduSmart_DBModel.Kullanicilar" Width="1.5" PointX="0.75" PointY="6.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="EduSmart_DBModel.Notlar" Width="1.5" PointX="9.75" PointY="7.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="EduSmart_DBModel.Odevler" Width="1.5" PointX="5.25" PointY="7.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="EduSmart_DBModel.RiskAnalizi" Width="1.5" PointX="3" PointY="8.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="EduSmart_DBModel.SinavSonuclari" Width="1.5" PointX="8.25" PointY="2.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="EduSmart_DBModel.sysdiagram" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="EduSmart_DBModel.Teslimler" Width="1.5" PointX="7.5" PointY="7" IsExpanded="true" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__Dersler__Egitmen__3C69FB99" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__Kayitlar__DersID__4222D4EF" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__Odevler__DersID__49C3F6B7" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__SinavSonu__DersI__6477ECF3" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__Kayitlar__Ogrenc__412EB0B6" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__RiskAnali__Ogren__59FA5E80" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__SinavSonu__Ogren__6383C8BA" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__Teslimler__Ogren__4F7CD00D" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__Notlar__TeslimID__5535A963" ManuallyRouted="false" />
+        <AssociationConnector Association="EduSmart_DBModel.FK__Teslimler__OdevI__4E88ABD4" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

@@ -1,0 +1,266 @@
+@using System.Linq
+@model IEnumerable<EduSmart.Models.Kullanicilar>
+@{
+    ViewBag.Title = "Kullanıcılar";
+    var role = Session["UserRole"] as string ?? string.Empty;
+    var userId = Session["UserId"] as int?;
+    var isStudent = role.Equals("Ogrenci", StringComparison.OrdinalIgnoreCase);
+    var isTeacher = role.Equals("Ogretmen", StringComparison.OrdinalIgnoreCase);
+    var isAdmin = role.Equals("Yonetici", StringComparison.OrdinalIgnoreCase);
+}
+
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+    }
+    
+    .admin-header h2 {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    }
+
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 10px;
+        margin-top: -10px;
+    }
+
+    .table-modern thead th {
+        border-bottom: none;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        color: #6b7280;
+        font-weight: 600;
+        padding: 1rem 1.5rem;
+    }
+
+    .table-modern tbody tr {
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+
+    .table-modern tbody td {
+        border: none;
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+    }
+    
+    .table-modern tbody td:first-child {
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+
+    .table-modern tbody td:last-child {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+
+    /* Badges */
+    .badge-modern {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge-admin { background: #ede9fe; color: #7c3aed; }
+    .badge-teacher { background: #dcfce7; color: #16a34a; }
+    .badge-student { background: #f3f4f6; color: #4b5563; }
+
+    /* Buttons */
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .btn-edit { background: #eff6ff; color: #3b82f6; }
+    .btn-edit:hover { background: #3b82f6; color: white; }
+    
+    .btn-delete { background: #fef2f2; color: #ef4444; }
+    .btn-delete:hover { background: #ef4444; color: white; }
+
+    /* Animations */
+    .gsap-row {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+</style>
+
+<div class="admin-header d-flex justify-content-between align-items-center">
+    <div>
+        <span class="badge bg-white text-primary mb-2 rounded-pill px-3 py-2 fw-bold"><i class="fa-solid fa-users-gear me-2"></i>Kullanıcı Yönetimi</span>
+        <h2 class="mb-1 text-white">Sistem Kullanıcıları</h2>
+        <p class="mb-0 text-white-50">Tüm öğrenci, öğretmen ve yöneticileri buradan yönetebilirsiniz.</p>
+    </div>
+    @if (!isStudent)
+    {
+        <a class="btn btn-light btn-lg rounded-pill fw-bold text-primary shadow-sm" href="@Url.Action("Create")">
+            <i class="fa-solid fa-plus me-2"></i> Yeni Kullanıcı
+        </a>
+    }
+</div>
+
+<div class="glass-card p-4 mb-4 gsap-card">
+    @using (Html.BeginForm("Index", "Users", FormMethod.Get))
+    {
+        <div class="row align-items-end g-3">
+            <div class="col-md-5">
+                <label for="dersId" class="form-label fw-bold text-secondary mb-2"><i class="fa-solid fa-filter me-2"></i>Derse Göre Filtrele</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-book-open text-muted"></i></span>
+                    @Html.DropDownList("dersId", ViewBag.DersID as SelectList, "-- Tüm Dersleri Göster --", new { @class = "form-select border-start-0", id = "dersId", onchange = "this.form.submit();", style="cursor: pointer; box-shadow: none;" })
+                </div>
+            </div>
+            
+            @if (ViewBag.SelectedDersID != null)
+            {
+                <div class="col-md-2">
+                    <a href="@Url.Action("Index")" class="btn btn-outline-danger w-100 fw-bold rounded-3">
+                        <i class="fa-solid fa-xmark me-2"></i> Temizle
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="table-responsive">
+    <table class="table table-modern table-hover align-middle">
+        <thead>
+            <tr>
+                <th width="30%">Kullanıcı Adı</th>
+                <th width="25%">E-posta Adresi</th>
+                <th width="20%">Sistem Rolü</th>
+                <th width="15%">Kayıt Tarihi</th>
+                <th width="10%" class="text-end">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in Model)
+        {
+            <tr class="gsap-row">
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar fw-bold rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; font-size: 1.2rem; background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); color: #4338ca !important; box-shadow: 0 4px 10px rgba(67, 56, 202, 0.15); border: 2px solid white;">
+                            @(!string.IsNullOrEmpty(user.AdSoyad) && user.AdSoyad.Length > 0 ? user.AdSoyad.Substring(0, 1).ToUpper() : "U")
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark fs-6">@user.AdSoyad</div>
+                            <div class="text-muted small">ID: #@user.KullaniciID</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-muted"><i class="fa-regular fa-envelope me-2"></i>@user.Eposta</td>
+                <td>
+                    @if (user.Rol.Equals("Yonetici", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span class="badge-modern badge-admin"><i class="fa-solid fa-shield-halved"></i> Yönetici</span>
+                    }
+                    else if (user.Rol.Equals("Ogretmen", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span class="badge-modern badge-teacher"><i class="fa-solid fa-chalkboard-user"></i> Öğretmen</span>
+                    }
+                    else
+                    {
+                        <span class="badge-modern badge-student"><i class="fa-solid fa-user-graduate"></i> Öğrenci</span>
+                    }
+                </td>
+                <td class="text-secondary fw-medium">
+                    <i class="fa-regular fa-calendar me-2"></i>@(user.OlusturulmaTarihi?.ToString("dd MMM yyyy") ?? "-")
+                </td>
+                <td class="text-end">
+                    @if (!isStudent)
+                    {
+                        var canEdit = false;
+                        if (isAdmin)
+                        {
+                            canEdit = true; // Admin can edit anyone, including themselves
+                        }
+                        else if (isTeacher)
+                        {
+                            canEdit = user.Rol.Equals("Ogrenci", StringComparison.OrdinalIgnoreCase);
+                        }
+
+                        if (canEdit)
+                        {
+                            <a class="btn-action btn-edit me-1" href="@Url.Action("Edit", new { id = user.KullaniciID })" title="Düzenle" data-bs-toggle="tooltip">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            if (userId != user.KullaniciID) // Prevent deleting self
+                            {
+                                <a class="btn-action btn-delete" href="@Url.Action("Delete", new { id = user.KullaniciID })" title="Sil" data-bs-toggle="tooltip">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            }
+                        }
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm gsap-card">
+            <i class="fa-regular fa-folder-open text-muted" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+            <h4 class="text-secondary fw-bold">Kullanıcı Bulunamadı</h4>
+            <p class="text-muted">Seçtiğiniz filtrelere uygun bir kullanıcı kaydı yoktur.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+              return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // GSAP Animations
+            gsap.from(".admin-header", { duration: 0.8, y: -30, opacity: 0, ease: "power3.out" });
+            gsap.from(".gsap-card", { duration: 0.8, y: 20, opacity: 0, ease: "power3.out", delay: 0.2 });
+            gsap.to(".gsap-row", { 
+                duration: 0.6, 
+                y: 0, 
+                opacity: 1, 
+                stagger: 0.08, 
+                ease: "power2.out", 
+                delay: 0.3 
+            });
+        });
+    </script>
+}

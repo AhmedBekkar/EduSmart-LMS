@@ -1,0 +1,593 @@
+@model List<EduSmart.Controllers.RiskAnalysisViewModel>
+@{
+    ViewBag.Title = "Risk Analizi";
+}
+
+<style>
+    /* Analytics Command Center Header */
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        border-radius: 20px;
+        padding: 2.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.4);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .dashboard-header::after {
+        content: '';
+        position: absolute;
+        top: -100px; right: -50px;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+    
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        bottom: -50px; left: -50px;
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(225, 29, 72, 0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+
+    /* Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 24px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #f1f5f9;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-card.risk-high { border-bottom: 4px solid #ef4444; }
+    .stat-card.risk-high:hover { box-shadow: 0 15px 30px rgba(239, 68, 68, 0.15); }
+    
+    .stat-card.risk-med { border-bottom: 4px solid #f59e0b; }
+    .stat-card.risk-med:hover { box-shadow: 0 15px 30px rgba(245, 158, 11, 0.15); }
+    
+    .stat-card.risk-low { border-bottom: 4px solid #10b981; }
+    .stat-card.risk-low:hover { box-shadow: 0 15px 30px rgba(16, 185, 129, 0.15); }
+
+    .stat-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 2.5rem;
+        opacity: 0.1;
+    }
+    
+    .risk-high .stat-icon { color: #ef4444; }
+    .risk-med .stat-icon { color: #f59e0b; }
+    .risk-low .stat-icon { color: #10b981; }
+
+    /* Smart Filter Bar */
+    .filter-bar {
+        background: white;
+        border-radius: 50px;
+        padding: 0.8rem 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .filter-select {
+        border: none;
+        background: #f8fafc;
+        border-radius: 30px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.3s;
+    }
+
+    .filter-select:focus {
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+    }
+
+    .btn-clear-filter {
+        background: #fef2f2;
+        color: #ef4444;
+        border: none;
+        border-radius: 30px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-clear-filter:hover {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    /* Smart Datatable */
+    .table-card {
+        background: white;
+        border-radius: 24px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        margin-bottom: 2rem;
+    }
+
+    .smart-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    .smart-table th {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #64748b;
+        font-weight: 700;
+        padding: 0 1rem 0.5rem 1rem;
+        border-bottom: 2px solid #f1f5f9;
+        text-align: left;
+    }
+
+    .smart-table td {
+        padding: 1rem;
+        background: #fff;
+        border-top: 1px solid #f8fafc;
+        border-bottom: 1px solid #f8fafc;
+        vertical-align: middle;
+    }
+
+    .smart-table tr td:first-child {
+        border-left: 1px solid #f8fafc;
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+    }
+
+    .smart-table tr td:last-child {
+        border-right: 1px solid #f8fafc;
+        border-top-right-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+
+    .smart-table tbody tr {
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.01);
+    }
+
+    .smart-table tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        border-color: #f1f5f9;
+    }
+
+    /* Student Badge */
+    .student-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .student-avatar {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+        color: #334155;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+    
+    .student-name {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 0.95rem;
+    }
+
+    /* Custom Progress Bar */
+    .risk-progress-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        width: 150px;
+    }
+    
+    .risk-progress-bg {
+        flex-grow: 1;
+        height: 8px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .risk-progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .fill-high { background: linear-gradient(90deg, #f87171, #ef4444); box-shadow: 0 0 10px rgba(239,68,68,0.5); }
+    .fill-med { background: linear-gradient(90deg, #fbbf24, #f59e0b); box-shadow: 0 0 10px rgba(245,158,11,0.5); }
+    .fill-low { background: linear-gradient(90deg, #34d399, #10b981); }
+
+    .risk-score-text {
+        font-weight: 800;
+        font-size: 1.1rem;
+        min-width: 35px;
+    }
+    
+    /* Pills and Badges */
+    .risk-pill {
+        padding: 0.4rem 0.8rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .pill-high { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+    .pill-med { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .pill-low { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+
+    /* Detail Grid */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #f8fafc;
+        padding: 0.3rem 0.5rem;
+        border-radius: 6px;
+        border: 1px solid #f1f5f9;
+        font-weight: 600;
+    }
+    
+    /* Buttons */
+    .btn-recalc {
+        background: white;
+        color: #3b82f6;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 0.4rem 0.8rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+    }
+    
+    .btn-recalc:hover {
+        background: #eff6ff;
+        border-color: #93c5fd;
+    }
+    
+    .btn-recalc:hover i {
+        animation: spin 1s linear infinite;
+    }
+    
+    @@keyframes spin { 100% { transform: rotate(360deg); } }
+    
+    .btn-global-recalc {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        padding: 0.6rem 1.2rem;
+        border-radius: 30px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        backdrop-filter: blur(5px);
+    }
+    
+    .btn-global-recalc:hover {
+        background: rgba(255,255,255,0.2);
+        color: white;
+    }
+
+    /* Rules Panel */
+    .rules-panel {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        border: 1px solid #f1f5f9;
+    }
+    
+    .rules-title {
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .rule-box {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 1.2rem;
+        height: 100%;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+    
+    .rule-box:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+</style>
+
+<div class="dashboard-header d-flex justify-content-between align-items-center">
+    <div style="position: relative; z-index: 2;">
+        <p class="text-uppercase fw-bold small mb-2" style="color: #38bdf8; letter-spacing: 1.5px;">
+            <i class="fa-solid fa-radar me-1"></i> Data Analytics
+        </p>
+        <h1 class="display-5 fw-bolder mb-2">Öğrenci Risk Analizi</h1>
+        <p class="mb-0 fs-5" style="color: rgba(255,255,255,0.7);">Kural tabanlı yapay zeka ile otomatik risk tespiti ve analizi.</p>
+    </div>
+    <div style="position: relative; z-index: 2;">
+        <a href="@Url.Action("Index", new { dersId = ViewBag.SelectedDersID })" class="btn-global-recalc">
+            <i class="fa-solid fa-rotate me-1"></i> Sistemi Güncelle
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3 mb-md-0">
+        <div class="stat-card risk-high">
+            <i class="fa-solid fa-triangle-exclamation stat-icon"></i>
+            <h5 class="fw-bold text-secondary mb-1">Yüksek Riskli</h5>
+            <div class="d-flex align-items-end gap-2">
+                <h1 class="display-4 fw-bolder text-danger mb-0">@Model.Count(m => m.RiskSeviyesi == "Yuksek")</h1>
+                <span class="text-muted fw-semibold mb-2">Öğrenci</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3 mb-md-0">
+        <div class="stat-card risk-med">
+            <i class="fa-solid fa-circle-exclamation stat-icon"></i>
+            <h5 class="fw-bold text-secondary mb-1">Orta Riskli</h5>
+            <div class="d-flex align-items-end gap-2">
+                <h1 class="display-4 fw-bolder text-warning mb-0" style="color: #f59e0b !important;">@Model.Count(m => m.RiskSeviyesi == "Orta")</h1>
+                <span class="text-muted fw-semibold mb-2">Öğrenci</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card risk-low">
+            <i class="fa-solid fa-shield-check stat-icon"></i>
+            <h5 class="fw-bold text-secondary mb-1">Düşük Riskli</h5>
+            <div class="d-flex align-items-end gap-2">
+                <h1 class="display-4 fw-bolder text-success mb-0">@Model.Count(m => m.RiskSeviyesi == "Dusuk")</h1>
+                <span class="text-muted fw-semibold mb-2">Öğrenci</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using (Html.BeginForm("Index", "RiskAnalizi", FormMethod.Get))
+{
+    <div class="filter-bar">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-filter text-muted ms-2"></i>
+            <span class="fw-bold text-secondary">Ders Filtresi:</span>
+        </div>
+        @Html.DropDownList("dersId", ViewBag.DersID as SelectList, "-- Tüm Derslerdeki Öğrencileri Göster --", new { @class = "filter-select flex-grow-1", id = "dersId", onchange = "this.form.submit();" })
+        
+        @if (ViewBag.SelectedDersID != null)
+        {
+            <a href="@Url.Action("Index")" class="btn-clear-filter">
+                <i class="fa-solid fa-xmark me-1"></i> Temizle
+            </a>
+        }
+    </div>
+}
+
+<div class="table-card">
+    <div class="table-responsive" style="overflow-x: visible;">
+        <table class="smart-table">
+            <thead>
+                    <th>Öğrenci & Akademik Durum</th>
+                    <th style="width: 50%;">Yapay Zeka Analizi <i class="fa-solid fa-sparkles text-warning ms-1"></i></th>
+                    <th class="text-end">İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var isHigh = item.RiskSeviyesi == "Yuksek";
+                    var isMed = item.RiskSeviyesi == "Orta";
+                    
+                    var pillClass = isHigh ? "pill-high" : (isMed ? "pill-med" : "pill-low");
+                    var pillIcon = isHigh ? "fa-triangle-exclamation" : (isMed ? "fa-circle-exclamation" : "fa-shield-check");
+                    var pillText = isHigh ? "Yüksek Risk" : (isMed ? "Orta Risk" : "Güvende");
+                    
+                    var fillClass = isHigh ? "fill-high" : (isMed ? "fill-med" : "fill-low");
+                    var textScoreClass = isHigh ? "text-danger" : (isMed ? "text-warning" : "text-success");
+                    var textScoreColorOverride = isMed ? "color: #d97706 !important;" : "";
+
+                    var basHarf = string.IsNullOrWhiteSpace(item.OgrenciAdi) ? "?" : item.OgrenciAdi.Substring(0, 1).ToUpper();
+
+                    <tr>
+                        <td>
+                            <div class="d-flex flex-column gap-3">
+                                <!-- Student Header -->
+                                <div class="student-badge">
+                                    <div class="student-avatar" style="width: 48px; height: 48px; font-size: 1.3rem;">@basHarf</div>
+                                    <div>
+                                        <div class="student-name" style="font-size: 1.1rem;">@item.OgrenciAdi</div>
+                                        <div class="d-flex gap-2 mt-1">
+                                             <span class="badge bg-light text-dark border"><i class="fa-solid fa-graduation-cap text-secondary me-1"></i> Sınav: @(item.Detaylar.OrtalamaSinavPuani?.ToString("0.#") ?? "-")</span>
+                                             <span class="badge bg-light text-dark border"><i class="fa-solid fa-book-open text-secondary me-1"></i> Ödev: @(item.Detaylar.OrtalamaOdevPuani?.ToString("0.#") ?? "-")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Risk & Progress -->
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="risk-pill @pillClass" style="min-width: 125px; justify-content: center;">
+                                        <i class="fa-solid @pillIcon"></i> @pillText
+                                    </span>
+                                    <div class="risk-progress-wrapper" style="width: 120px;">
+                                        <div class="risk-progress-bg">
+                                            <div class="risk-progress-fill @fillClass" style="width: @(item.RiskPuani)%"></div>
+                                        </div>
+                                        <span class="risk-score-text @textScoreClass" style="font-size: 0.95rem; @textScoreColorOverride">@item.RiskPuani.ToString("0")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="p-3" style="background: rgba(248, 250, 252, 0.7); border-radius: 12px; border: 1px solid #e2e8f0; height: 100%;">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <span class="badge bg-white text-dark border border-secondary shadow-sm">
+                                        <i class="fa-solid fa-chart-line text-primary me-1"></i> Eğilim: @Html.Raw(item.Egilim)
+                                    </span>
+                                    @if(item.Detaylar.GecmisOdevSayisi > 0){ <span class="badge bg-danger text-white"><i class="fa-solid fa-file-circle-xmark me-1"></i> @item.Detaylar.GecmisOdevSayisi Eksik Ödev</span> }
+                                    @if(item.Detaylar.GecTeslimSayisi > 0){ <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock-rotate-left me-1"></i> @item.Detaylar.GecTeslimSayisi Geç Teslim</span> }
+                                </div>
+
+                                @if (item.YapayZekaOnerileri != null && item.YapayZekaOnerileri.Any())
+                                {
+                                    <div class="d-flex flex-column gap-2 mt-3">
+                                    @foreach (var oneri in item.YapayZekaOnerileri)
+                                    {
+                                        <div class="small fw-semibold text-dark d-flex gap-2">
+                                            <i class="fa-solid fa-sparkles text-primary mt-1"></i>
+                                            <span style="line-height: 1.4;">@oneri</span>
+                                        </div>
+                                    }
+                                    </div>
+                                }
+                            </div>
+                        </td>
+                        <td class="action-cell">
+                            <form method="post" action="@Url.Action("Recalculate")" class="recalc-form" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ogrenciId" value="@item.OgrenciID" />
+                                <button type="submit" class="btn btn-outline-primary rounded-circle" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" title="Öğrencinin risk durumunu yeniden hesapla">
+                                    <i class="fa-solid fa-rotate-right"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3" style="opacity: 0.2;"><i class="fa-solid fa-users-slash"></i></div>
+                <h4 class="text-secondary fw-bold">Kayıt Bulunamadı</h4>
+                <p class="text-muted">Seçili kritere uygun analiz edilecek öğrenci bulunamadı.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="rules-panel">
+    <h4 class="rules-title"><i class="fa-solid fa-microchip text-primary"></i> Analiz Motoru Kuralları</h4>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="rule-box">
+                <h6 class="fw-bold text-dark"><i class="fa-solid fa-graduation-cap text-primary me-2"></i>Sınav & Ödev Puanları</h6>
+                <hr class="text-muted my-2">
+                <p class="small text-muted mb-1">Düşük sınav (50 altı) <strong>+30 Risk</strong></p>
+                <p class="small text-muted mb-1">Düşük ödev (50 altı) <strong>+25 Risk</strong></p>
+                <p class="small text-muted mb-0">Sınav yoksa veya belirsizse <strong>+15 Risk</strong></p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rule-box">
+                <h6 class="fw-bold text-dark"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Teslimat Alışkanlıkları</h6>
+                <hr class="text-muted my-2">
+                <p class="small text-muted mb-1">Geç teslim %50'den fazla <strong>+20 Risk</strong></p>
+                <p class="small text-muted mb-1">Genel teslim oranı %50 altı <strong>+15 Risk</strong></p>
+                <p class="small text-muted mb-0">Genel teslim %50-70 arası <strong>+10 Risk</strong></p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="rule-box">
+                <h6 class="fw-bold text-dark"><i class="fa-solid fa-triangle-exclamation text-primary me-2"></i>Kayıp Görevler & Seviyeler</h6>
+                <hr class="text-muted my-2">
+                <p class="small text-muted mb-2">Süresi geçen her eksik ödev <strong>+2 Risk</strong> (Max 10)</p>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-danger">70+ Yüksek</span>
+                    <span class="badge bg-warning text-dark">40+ Orta</span>
+                    <span class="badge bg-success">0+ Düşük</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.recalc-form').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    var btn = this.querySelector('button');
+                    var icon = btn.querySelector('i');
+                    
+                    // Add spinning class
+                    icon.classList.add('fa-spin');
+                    btn.disabled = true;
+                    
+                    var formData = new FormData(this);
+                    
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            // Reload page to reflect new AI insights and scores, preserving current filter
+                            window.location.reload(); 
+                        } else {
+                            icon.classList.remove('fa-spin');
+                            btn.disabled = false;
+                            alert("❌ " + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        icon.classList.remove('fa-spin');
+                        btn.disabled = false;
+                        alert("❌ Bir hata oluştu.");
+                    });
+                });
+            });
+        });
+    </script>
+}

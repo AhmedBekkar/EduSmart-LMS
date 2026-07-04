@@ -1,0 +1,94 @@
+@model EduSmart.Models.UserInputViewModel
+
+<style>
+    .form-floating > label {
+        padding: 1rem 1.2rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .form-floating > .form-control, .form-floating > .form-select {
+        height: 60px;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        background-color: #f8fafc;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        font-weight: 500;
+        color: #0f172a;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .form-floating > .form-select {
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #6366f1;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    }
+
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label,
+    .form-floating > .form-select ~ label {
+        transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
+        color: #6366f1;
+        font-weight: 600;
+    }
+
+    .validation-error {
+        color: #ef4444;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+        display: block;
+    }
+</style>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="form-floating position-relative">
+            @Html.TextBoxFor(m => m.AdSoyad, new { @class = "form-control", id="AdSoyadInput", placeholder = "Ad Soyad" })
+            <label for="AdSoyadInput"><i class="fa-regular fa-user me-2"></i>Ad Soyad</label>
+            @Html.ValidationMessageFor(m => m.AdSoyad, "", new { @class = "validation-error" })
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="form-floating position-relative">
+            @Html.TextBoxFor(m => m.Eposta, new { @class = "form-control", id="EpostaInput", placeholder = "ornek@email.com", type = "email" })
+            <label for="EpostaInput"><i class="fa-regular fa-envelope me-2"></i>E-posta Adresi</label>
+            @Html.ValidationMessageFor(m => m.Eposta, "", new { @class = "validation-error" })
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="form-floating position-relative">
+            @{
+                // If current user is Teacher, they can only create/edit Students.
+                var isTeacher = (Session["UserRole"] as string ?? string.Empty).Equals("Ogretmen", StringComparison.OrdinalIgnoreCase);
+                var roles = isTeacher
+                    ? new[] { new SelectListItem { Text = "Öğrenci", Value = "Ogrenci" } }
+                    : new[] {
+                        new SelectListItem { Text = "Öğrenci", Value = "Ogrenci" },
+                        new SelectListItem { Text = "Öğretmen", Value = "Ogretmen" },
+                        new SelectListItem { Text = "Yönetici", Value = "Yonetici" }
+                    };
+            }
+            @Html.DropDownListFor(m => m.Rol, new SelectList(roles, "Value", "Text", Model?.Rol), "-- Sistem Rolü Seçin --", new { @class = "form-select", id="RolInput" })
+            <label for="RolInput"><i class="fa-solid fa-users-gear me-2"></i>Kullanıcı Rolü</label>
+            @Html.ValidationMessageFor(m => m.Rol, "", new { @class = "validation-error" })
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="form-floating position-relative">
+            @Html.PasswordFor(m => m.Password, new { @class = "form-control", id="PasswordInput", placeholder = "Şifre" })
+            <label for="PasswordInput"><i class="fa-solid fa-lock me-2"></i>Şifre</label>
+            <small class="text-muted mt-2 d-block"><i class="fa-solid fa-circle-info me-1"></i>(Düzenleme yaparken şifreyi değiştirmek istemiyorsanız boş bırakın)</small>
+            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "validation-error" })
+        </div>
+    </div>
+</div>

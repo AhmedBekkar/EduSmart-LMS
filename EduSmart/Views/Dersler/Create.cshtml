@@ -1,0 +1,171 @@
+@model EduSmart.Models.Dersler
+@{
+    ViewBag.Title = "Yeni Ders Ekle";
+}
+
+<style>
+    .form-container {
+        max-width: 650px;
+        margin: 2rem auto;
+        animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @@keyframes slideUp {
+        0% { transform: translateY(30px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .glass-form-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255,255,255,0.6);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .glass-form-card::before {
+        content: '';
+        position: absolute;
+        top: -50px; right: -50px;
+        width: 150px; height: 150px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .form-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        color: #4f46e5;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem auto;
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.15);
+    }
+
+    .form-title {
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+    }
+
+    /* Modern Inputs */
+    .form-label {
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.8rem 1.2rem;
+        font-size: 1rem;
+        color: #1e293b;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        background: white;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .form-group-modern {
+        margin-bottom: 1.8rem;
+    }
+
+    /* Buttons */
+    .btn-submit {
+        background: linear-gradient(135deg, #4f46e5, #3b82f6);
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        width: 100%;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-cancel {
+        color: #64748b;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 1rem;
+        transition: color 0.2s;
+    }
+    
+    .btn-cancel:hover {
+        color: #0f172a;
+    }
+</style>
+
+<div class="form-container">
+    <div class="glass-form-card">
+        <div class="form-header">
+            <div class="form-icon">
+                <i class="fa-solid fa-book-medical"></i>
+            </div>
+            <h2 class="form-title">Yeni Ders Ekle</h2>
+            <p class="text-secondary">Akademiye yeni bir ders ve eğitmen atayın.</p>
+        </div>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger small mb-3 fw-bold" })
+
+            <div class="form-group-modern">
+                @Html.LabelFor(m => m.DersAdi, new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.DersAdi, new { @class = "form-control", placeholder = "Örn: Veri Bilimi Temelleri" })
+                @Html.ValidationMessageFor(m => m.DersAdi, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+            </div>
+            
+            <div class="form-group-modern">
+                @Html.Label("EgitmenID", "Eğitmen Ata", new { @class = "form-label" })
+                @Html.DropDownList("EgitmenID", null, "-- Eğitmen Seçin --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.EgitmenID, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+            </div>
+            
+            <div class="form-group-modern">
+                @Html.LabelFor(m => m.Aciklama, new { @class = "form-label" })
+                @Html.TextAreaFor(m => m.Aciklama, new { @class = "form-control", rows = 4, placeholder = "Dersin içeriği ve hedefleri hakkında kısa bir açıklama yazın..." })
+                @Html.ValidationMessageFor(m => m.Aciklama, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+            </div>
+
+            <div class="text-center mt-2">
+                <button type="submit" class="btn btn-submit">
+                    <i class="fa-solid fa-plus me-2"></i> Dersi Oluştur
+                </button>
+                <br />
+                <a href="@Url.Action("Index")" class="btn-cancel">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Listeye Dön
+                </a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,366 @@
+@model IEnumerable<EduSmart.Models.Odevler>
+@{
+    ViewBag.Title = "Ödevler";
+    var role = Session["UserRole"] as string ?? string.Empty;
+    var isStudent = role.Equals("Ogrenci", StringComparison.OrdinalIgnoreCase);
+}
+
+<style>
+    /* ----- ANIMATIONS & BACKGROUNDS ----- */
+    @@keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .page-header-banner {
+        background: linear-gradient(-45deg, #f59e0b, #ea580c, #dc2626);
+        background-size: 300% 300%;
+        animation: gradientShift 10s ease infinite;
+        border-radius: 20px;
+        padding: 2.5rem 3rem;
+        color: white;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 15px 35px rgba(234, 88, 12, 0.25);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header-banner::after {
+        content: '';
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+
+    /* ----- FILTER BAR ----- */
+    .filter-bar {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 100px;
+        padding: 0.8rem 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .filter-bar .form-control {
+        border: none;
+        background: #f1f5f9;
+        border-radius: 50px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        color: #475569;
+        width: 250px;
+        cursor: pointer;
+    }
+
+    .filter-bar .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
+    }
+    
+    /* ----- SMART DATATABLE (GLASSMORPHISM) ----- */
+    .glass-table-container {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), inset 0 0 0 1px rgba(255,255,255,0.6);
+        overflow: hidden;
+    }
+
+    .smart-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 0.8rem;
+    }
+
+    .smart-table thead th {
+        border: none;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        padding: 0 1.5rem 0.5rem 1.5rem;
+    }
+
+    .smart-table tbody tr {
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        border-radius: 16px;
+    }
+
+    .smart-table tbody tr td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+    .smart-table tbody tr td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+
+    .smart-table tbody tr:hover {
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+        background: white;
+    }
+
+    .smart-table td {
+        padding: 1.2rem 1.5rem;
+        border: none;
+        vertical-align: middle;
+    }
+
+    /* Titles and Pills */
+    .assignment-title {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 1.15rem;
+    }
+
+    .course-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f1f5f9;
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #475569;
+    }
+
+    /* Badges */
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-active { background: #dcfce7; color: #16a34a; }
+    .status-overdue { background: #fee2e2; color: #ef4444; }
+    .status-submitted { background: #dbeafe; color: #2563eb; }
+
+    /* Stars */
+    .star-rating { color: #f59e0b; font-size: 0.9rem; }
+    .star-empty { color: #e2e8f0; }
+
+    /* Actions */
+    .action-cell { text-align: right; white-space: nowrap; }
+
+    .btn-action-visible {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit-glow { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
+    .btn-edit-glow:hover { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+
+    .btn-delete-glow { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+    .btn-delete-glow:hover { background: #ef4444; color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+
+    /* Student Actions */
+    .btn-submit-action {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-submit-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
+        color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 30px;
+        border: 2px dashed rgba(148, 163, 184, 0.3);
+    }
+</style>
+
+<div class="page-header-banner">
+    <div style="position: relative; z-index: 2;">
+        <span class="badge bg-white text-dark rounded-pill px-3 py-2 fw-bold mb-3 shadow-sm" style="color: #ea580c !important;">
+            <i class="fa-solid fa-laptop-file me-1"></i> Görev Yöneticisi
+        </span>
+        <h1 class="fw-black mb-1" style="font-size: 2.5rem; letter-spacing: -1px; text-shadow: 0 4px 15px rgba(0,0,0,0.1);">Ödev Listesi</h1>
+        <p class="mb-0 text-white-50 fs-5">Tüm derslere ait ödevleri, projeleri ve teslimleri yönetin.</p>
+    </div>
+    @if (!isStudent)
+    {
+        <div style="position: relative; z-index: 2;">
+            <a class="btn btn-light btn-lg rounded-pill px-4 fw-bold shadow" style="color: #ea580c;" href="@Url.Action("Create")">
+                <i class="fa-solid fa-plus me-2"></i> Yeni Ödev Ekle
+            </a>
+        </div>
+    }
+</div>
+
+@using (Html.BeginForm("Index", "Odevler", FormMethod.Get))
+{
+    <div class="filter-bar">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-filter text-muted"></i>
+            <span class="fw-bold text-dark">Ders Filtresi:</span>
+        </div>
+        @Html.DropDownList("dersId", ViewBag.DersID as SelectList, "-- Tüm Dersleri Göster --", new { @class = "form-control", id = "dersId", onchange = "this.form.submit();" })
+        
+        @if (ViewBag.SelectedDersID != null)
+        {
+            <a href="@Url.Action("Index")" class="btn btn-sm btn-light rounded-pill px-3 text-muted ms-auto">
+                <i class="fa-solid fa-xmark me-1"></i> Filtreyi Temizle
+            </a>
+        }
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="fa-regular fa-folder-open text-muted mb-3" style="font-size: 4rem; opacity: 0.5;"></i>
+        <h3 class="fw-bold text-dark mb-2">Henüz ödev bulunmuyor</h3>
+        <p class="text-secondary fs-5">Bu filtreye uygun herhangi bir ödev kaydı bulunamadı.</p>
+    </div>
+}
+else
+{
+    <div class="glass-table-container table-responsive">
+        <table class="smart-table">
+            <thead>
+                <tr>
+                    <th>Ödev Başlığı</th>
+                    <th>Ders</th>
+                    <th>Ağırlık & Zorluk</th>
+                    <th>Teslim Tarihi</th>
+                    <th>Durum / İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+            @{
+                var submissions = ViewBag.Submissions as List<EduSmart.Models.Teslimler> ?? new List<EduSmart.Models.Teslimler>();
+                var studentId = ViewBag.StudentId as int?;
+            }
+            @foreach (var item in Model)
+            {
+                var submission = isStudent && studentId.HasValue 
+                    ? submissions.FirstOrDefault(s => s.OdevID == item.OdevID && s.OgrenciID == studentId.Value)
+                    : null;
+                var isSubmitted = submission != null;
+                var isOverdue = DateTime.Now > item.SonTeslimTarihi;
+                var canSubmit = isStudent && !isOverdue;
+                var canUpdate = isStudent && isSubmitted && !isOverdue;
+                
+                var opacityClass = isOverdue && !isSubmitted ? "opacity-75" : "";
+                
+                <tr class="@opacityClass">
+                    <td>
+                        <div class="assignment-title">@item.Baslik</div>
+                    </td>
+                    <td>
+                        <div class="course-pill">
+                            <i class="fa-solid fa-bookmark text-muted"></i>
+                            @(item.Dersler != null ? item.Dersler.DersAdi : "-")
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            <span class="badge bg-light text-dark border">Ağırlık: %@(item.Agirlik?.ToString() ?? "0")</span>
+                            <div class="star-rating">
+                                @{
+                                    int zorluk = item.ZorlukSeviyesi ?? 0;
+                                    for(int i=1; i<=5; i++)
+                                    {
+                                        if (i <= zorluk) { <i class="fa-solid fa-star"></i> }
+                                        else { <i class="fa-solid fa-star star-empty"></i> }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column align-items-start gap-1">
+                            <span class="fw-semibold text-dark">
+                                <i class="fa-regular fa-clock text-muted me-1"></i>
+                                @item.SonTeslimTarihi.ToString("dd MMM yyyy, HH:mm")
+                            </span>
+                            @if (isOverdue)
+                            {
+                                <span class="status-badge status-overdue"><i class="fa-solid fa-circle-exclamation"></i> Süre Bitti</span>
+                            }
+                            else
+                            {
+                                <span class="status-badge status-active"><i class="fa-solid fa-circle-check"></i> Devam Ediyor</span>
+                            }
+                        </div>
+                    </td>
+                    <td class="action-cell">
+                        @if (isStudent)
+                        {
+                            if (isSubmitted && canUpdate)
+                            {
+                                <span class="status-badge status-submitted me-2"><i class="fa-solid fa-check-double"></i> Teslim Edildi</span>
+                                <a class="btn-submit-action" href="@Url.Action("Submit", new { id = item.OdevID })">
+                                    <i class="fa-solid fa-pen"></i> Güncelle
+                                </a>
+                            }
+                            else if (isSubmitted && isOverdue)
+                            {
+                                <span class="status-badge status-submitted"><i class="fa-solid fa-check-double"></i> Teslim Edildi</span>
+                            }
+                            else if (canSubmit)
+                            {
+                                <a class="btn-submit-action" href="@Url.Action("Submit", new { id = item.OdevID })">
+                                    <i class="fa-solid fa-paper-plane"></i> Teslim Et
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted fw-bold"><i class="fa-solid fa-lock"></i> Kilitli</span>
+                            }
+                        }
+                        else
+                        {
+                            <a class="btn-action-visible btn-edit-glow" href="@Url.Action("Edit", new { id = item.OdevID })">
+                                <i class="fa-solid fa-pen-to-square me-1"></i> Düzenle
+                            </a>
+                            <a class="btn-action-visible btn-delete-glow" href="@Url.Action("Delete", new { id = item.OdevID })">
+                                <i class="fa-solid fa-trash me-1"></i> Sil
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

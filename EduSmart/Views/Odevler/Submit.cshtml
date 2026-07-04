@@ -1,0 +1,315 @@
+@{
+    ViewBag.Title = "Ödev Çalışma Alanı";
+    var odev = ViewBag.Odev as EduSmart.Models.Odevler;
+    var existingSubmission = ViewBag.ExistingSubmission as EduSmart.Models.Teslimler;
+    var isDeadlinePassed = odev != null && DateTime.Now > odev.SonTeslimTarihi;
+}
+
+<style>
+    .workspace-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        max-width: 1000px;
+        margin: 0 auto;
+        animation: fadeIn 0.6s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Info Card */
+    .info-card {
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 6px; height: 100%;
+        background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+    }
+
+    .assignment-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+    }
+
+    .course-subtitle {
+        color: #64748b;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .description-box {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: #334155;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+
+    .meta-tags {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-tag {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .tag-danger { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+    .tag-success { background: #dcfce7; color: #16a34a; border-color: #bbf7d0; }
+
+    /* Workspace Area */
+    .action-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+    }
+
+    .action-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Drag & Drop File Input Mock */
+    .file-upload-wrapper {
+        position: relative;
+        width: 100%;
+        min-height: 150px;
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        padding: 2rem;
+    }
+    
+    .file-upload-wrapper:hover {
+        border-color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    .file-upload-wrapper input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+        transition: color 0.3s;
+    }
+    .file-upload-wrapper:hover .upload-icon { color: #3b82f6; }
+
+    .upload-text {
+        font-weight: 700;
+        color: #475569;
+        font-size: 1.1rem;
+    }
+
+    /* Existing Submission Alert */
+    .existing-alert {
+        background: linear-gradient(to right, #eff6ff, #dbeafe);
+        border-left: 4px solid #3b82f6;
+        border-radius: 0 12px 12px 0;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-submit-glow {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 1rem 3rem;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-submit-glow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+    }
+</style>
+
+<div class="workspace-container">
+    @if (odev != null)
+    {
+        <div class="info-card">
+            <h1 class="assignment-title">@odev.Baslik</h1>
+            <div class="course-subtitle">
+                <i class="fa-solid fa-bookmark me-2 text-primary"></i> @(odev.Dersler?.DersAdi ?? "Bilinmeyen Ders")
+            </div>
+
+            <div class="description-box">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-info text-muted me-2"></i> Açıklama & Yönergeler</h5>
+                @Html.Raw(Html.Encode(odev.Aciklama ?? "Bu ödev için bir açıklama girilmemiş.").Replace("\n", "<br/>"))
+            </div>
+
+            <div class="meta-tags">
+                <div class="meta-tag @(isDeadlinePassed ? "tag-danger" : "tag-success")">
+                    <i class="fa-regular fa-calendar-check"></i> Son Teslim: @odev.SonTeslimTarihi.ToString("dd MMMM yyyy HH:mm")
+                </div>
+                @if (odev.Agirlik.HasValue)
+                {
+                    <div class="meta-tag">
+                        <i class="fa-solid fa-percent text-info"></i> Ağırlık: %@odev.Agirlik
+                    </div>
+                }
+                @if (odev.ZorlukSeviyesi.HasValue)
+                {
+                    <div class="meta-tag">
+                        <i class="fa-solid fa-fire text-orange"></i> Zorluk: @odev.ZorlukSeviyesi / 5
+                    </div>
+                }
+            </div>
+        </div>
+
+        if (existingSubmission != null)
+        {
+            <div class="existing-alert">
+                <i class="fa-solid fa-file-circle-check fs-2 text-primary"></i>
+                <div>
+                    <h5 class="fw-bold mb-1 text-dark">Bu ödevi daha önce teslim ettiniz!</h5>
+                    <div class="text-muted small">
+                        <strong>Son Teslim Tarihiniz:</strong> @(existingSubmission.TeslimTarihi?.ToString("dd MMMM yyyy HH:mm") ?? "-")
+                        @if (!string.IsNullOrEmpty(existingSubmission.DosyaYolu))
+                        {
+                            <span class="ms-3"><a href="@existingSubmission.DosyaYolu" target="_blank" class="fw-bold text-decoration-none">Yüklediğiniz Dosyayı Gör <i class="fa-solid fa-arrow-up-right-from-square ms-1"></i></a></span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        if (isDeadlinePassed)
+        {
+            <div class="alert alert-danger p-4 border-0 rounded-4 shadow-sm text-center">
+                <i class="fa-solid fa-lock fs-1 mb-3"></i>
+                <h4 class="fw-bold">Teslim Süresi Doldu</h4>
+                <p class="mb-0 text-muted">Bu ödevin son teslim tarihi geçtiği için artık yeni teslim yapamaz veya mevcut tesliminizi güncelleyemezsiniz.</p>
+                <a href="@Url.Action("Index")" class="btn btn-outline-danger rounded-pill px-4 mt-4 fw-bold">Görev Yöneticisine Dön</a>
+            </div>
+        }
+        else
+        {
+            <div class="action-card">
+                <h3 class="action-title"><i class="fa-solid fa-cloud-arrow-up text-primary"></i> Çalışmanızı Gönderin</h3>
+                
+                <form action="@Url.Action("Submit", "Odevler")" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="odevId" value="@odev.OdevID" />
+
+                    <div class="row">
+                        <div class="col-md-7 mb-4">
+                            <label for="icerikMetni" class="fw-bold text-dark mb-2">Ödev Notu / Metin İçeriği</label>
+                            <textarea name="icerikMetni" id="icerikMetni" class="form-control" rows="8" placeholder="Eğer dosya yüklemek yerine metin girecekseniz veya dosyanıza ek bir not eklemek istiyorsanız buraya yazın...">@(existingSubmission?.IcerikMetni ?? "")</textarea>
+                        </div>
+                        <div class="col-md-5 mb-4">
+                            <label class="fw-bold text-dark mb-2">Dosya Yükleme (İsteğe Bağlı)</label>
+                            <div class="file-upload-wrapper" id="drop-zone">
+                                <i class="fa-solid fa-file-arrow-up upload-icon"></i>
+                                <span class="upload-text">Dosya Seçin veya Sürükleyin</span>
+                                <small class="text-muted mt-2 text-center px-3">PDF, DOC, DOCX, TXT, ZIP, RAR<br/>(Maksimum boyut: 10MB)</small>
+                                <input type="file" name="dosya" id="dosya" accept=".pdf,.doc,.docx,.txt,.zip,.rar" />
+                            </div>
+                            <div id="file-name-display" class="mt-2 fw-bold text-success text-center" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3 pt-3 border-top">
+                        <button type="submit" class="btn btn-submit-glow">
+                            <i class="fa-solid fa-paper-plane me-2"></i> @(existingSubmission != null ? "Teslimimi Güncelle ve Gönder" : "Çalışmamı Gönder")
+                        </button>
+                        <br />
+                        <a href="@Url.Action("Index")" class="text-muted fw-bold text-decoration-none d-inline-block mt-3">İptal Et</a>
+                    </div>
+                </form>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-danger text-center p-5 rounded-4">
+            <h3 class="fw-bold">Ödev Bulunamadı</h3>
+            <p>Aradığınız ödev sistemde mevcut değil.</p>
+            <a href="@Url.Action("Index")" class="btn btn-outline-danger fw-bold rounded-pill">Listeye Dön</a>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        // Simple script to show selected file name in the custom upload box
+        document.getElementById('dosya').addEventListener('change', function(e) {
+            var fileNameDisplay = document.getElementById('file-name-display');
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.innerHTML = '<i class="fa-solid fa-check-circle me-1"></i> Seçildi: ' + this.files[0].name;
+                fileNameDisplay.style.display = 'block';
+            } else {
+                fileNameDisplay.style.display = 'none';
+            }
+        });
+    </script>
+}

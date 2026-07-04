@@ -1,0 +1,267 @@
+@model IEnumerable<EduSmart.Models.Kayitlar>
+@{
+    ViewBag.Title = "Kayıtlar";
+    var role = Session["UserRole"] as string ?? string.Empty;
+    var isStudent = role.Equals("Ogrenci", StringComparison.OrdinalIgnoreCase);
+}
+
+<style>
+    /* ----- ANIMATIONS & BACKGROUNDS ----- */
+    @@keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .page-header-banner {
+        background: linear-gradient(-45deg, #8b5cf6, #d946ef, #f43f5e);
+        background-size: 300% 300%;
+        animation: gradientShift 10s ease infinite;
+        border-radius: 20px;
+        padding: 2.5rem 3rem;
+        color: white;
+        margin-bottom: 3rem;
+        box-shadow: 0 15px 35px rgba(217, 70, 239, 0.25);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header-banner::after {
+        content: '';
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+
+    /* ----- SMART DATATABLE (GLASSMORPHISM) ----- */
+    .glass-table-container {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), inset 0 0 0 1px rgba(255,255,255,0.6);
+        overflow: hidden;
+    }
+
+    .smart-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 0.8rem;
+    }
+
+    .smart-table thead th {
+        border: none;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        padding: 0 1.5rem 0.5rem 1.5rem;
+    }
+
+    .smart-table tbody tr {
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        border-radius: 16px;
+    }
+
+    .smart-table tbody tr td:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+    .smart-table tbody tr td:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+
+    .smart-table tbody tr:hover {
+        transform: translateY(-3px) scale(1.01);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+        background: white;
+    }
+
+    .smart-table td {
+        padding: 1.2rem 1.5rem;
+        border: none;
+        vertical-align: middle;
+    }
+
+    /* Student Column */
+    .student-cell {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .student-avatar {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        font-weight: 800;
+        box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+    }
+
+    .student-name {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 1.1rem;
+    }
+
+    /* Course Column */
+    .course-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f1f5f9;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .course-badge i {
+        color: #3b82f6;
+    }
+
+    /* Date Column */
+    .date-cell {
+        color: #64748b;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Actions */
+    .action-cell {
+        text-align: right;
+    }
+
+    .btn-action-hide {
+        opacity: 0;
+        transform: translateX(10px);
+        transition: all 0.3s ease;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #fef2f2;
+        color: #ef4444;
+        border: 1px solid #fecaca;
+        text-decoration: none;
+    }
+
+    .smart-table tbody tr:hover .btn-action-hide {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .btn-action-hide:hover {
+        background: #ef4444;
+        color: white;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 30px;
+        border: 2px dashed rgba(148, 163, 184, 0.3);
+    }
+
+</style>
+
+<div class="page-header-banner">
+    <div style="position: relative; z-index: 2;">
+        <span class="badge bg-white text-dark rounded-pill px-3 py-2 fw-bold mb-3 shadow-sm" style="color: #d946ef !important;">
+            <i class="fa-solid fa-users-rectangle me-1"></i> Kayıt Yönetimi
+        </span>
+        <h1 class="fw-black mb-1" style="font-size: 2.5rem; letter-spacing: -1px; text-shadow: 0 4px 15px rgba(0,0,0,0.1);">Ders Kayıtları</h1>
+        <p class="mb-0 text-white-50 fs-5">Öğrencilerin kayıtlı oldukları dersleri görüntüleyin ve yönetin.</p>
+    </div>
+    @if (!isStudent)
+    {
+        <div style="position: relative; z-index: 2;">
+            <a class="btn btn-light btn-lg rounded-pill px-4 fw-bold shadow" style="color: #d946ef;" href="@Url.Action("Create")">
+                <i class="fa-solid fa-user-plus me-2"></i> Yeni Kayıt Ekle
+            </a>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="fa-solid fa-clipboard-user text-muted mb-3" style="font-size: 4rem; opacity: 0.5;"></i>
+        <h3 class="fw-bold text-dark mb-2">Henüz kayıt bulunmuyor</h3>
+        <p class="text-secondary fs-5">Sisteme henüz herhangi bir öğrenci-ders kaydı eklenmemiş.</p>
+        @if (!isStudent)
+        {
+            <a href="@Url.Action("Create")" class="btn btn-primary rounded-pill px-4 py-2 mt-2 fw-bold" style="background: linear-gradient(135deg, #d946ef, #8b5cf6); border:none;">İlk Kaydı Oluştur</a>
+        }
+    </div>
+}
+else
+{
+    <div class="glass-table-container table-responsive">
+        <table class="smart-table">
+            <thead>
+                <tr>
+                    <th>Öğrenci Bilgisi</th>
+                    <th>Ders Adı</th>
+                    <th>Kayıt Tarihi</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var ogrenciAdi = item.Kullanicilar != null ? item.Kullanicilar.AdSoyad : "Bilinmiyor";
+                    var ogrenciBasHarf = ogrenciAdi.Length > 0 ? ogrenciAdi.Substring(0, 1).ToUpper() : "?";
+                    var dersAdi = item.Dersler != null ? item.Dersler.DersAdi : "Bilinmiyor";
+                    
+                    <tr>
+                        <td>
+                            <div class="student-cell">
+                                <div class="student-avatar">@ogrenciBasHarf</div>
+                                <span class="student-name">@ogrenciAdi</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="course-badge">
+                                <i class="fa-solid fa-book-open"></i> @dersAdi
+                            </div>
+                        </td>
+                        <td>
+                            <div class="date-cell">
+                                <i class="fa-regular fa-calendar-check"></i>
+                                @(item.KayitTarihi.HasValue ? item.KayitTarihi.Value.ToString("dd MMMM yyyy") : "-")
+                            </div>
+                        </td>
+                        <td class="action-cell">
+                            @if (!isStudent)
+                            {
+                                <a class="btn-action-hide" href="@Url.Action("Delete", new { id = item.KayitID })" title="Kaydı Sil">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

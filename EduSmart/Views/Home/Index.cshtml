@@ -1,0 +1,519 @@
+@using EduSmart.Services
+@using EduSmart.Models
+@{
+    ViewBag.Title = "Kontrol Paneli";
+    var ad = Session["UserName"] as string ?? "Misafir";
+    var rol = Session["UserRole"] as string ?? string.Empty;
+    var isStudent = rol.Equals("Ogrenci", StringComparison.OrdinalIgnoreCase);
+    var isTeacher = rol.Equals("Ogretmen", StringComparison.OrdinalIgnoreCase);
+    var isAdmin = rol.Equals("Yonetici", StringComparison.OrdinalIgnoreCase);
+    var prioritizedAssignments = ViewBag.PrioritizedAssignments as List<PrioritizedAssignment> ?? new List<PrioritizedAssignment>();
+    var unsubmittedAssignments = ViewBag.UnsubmittedAssignments as List<Odevler> ?? new List<Odevler>();
+}
+
+<style>
+    /* ----- ANIMATIONS ----- */
+    @@keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @@keyframes floatOrb {
+        0% { transform: translateY(0) scale(1); opacity: 0.5; }
+        50% { transform: translateY(-20px) scale(1.1); opacity: 0.8; }
+        100% { transform: translateY(0) scale(1); opacity: 0.5; }
+    }
+
+    /* ----- HERO SECTION (ULTRA PREMIUM) ----- */
+    .hero-banner {
+        background: linear-gradient(-45deg, #4f46e5, #7c3aed, #2563eb, #db2777);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        border-radius: 24px;
+        padding: 4rem 3rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(79, 70, 229, 0.3);
+        margin-bottom: 3.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Floating Orbs */
+    .orb-1 {
+        position: absolute;
+        top: -10%;
+        right: 10%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+        animation: floatOrb 6s ease-in-out infinite;
+    }
+
+    .orb-2 {
+        position: absolute;
+        bottom: -20%;
+        left: 20%;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+        animation: floatOrb 8s ease-in-out infinite reverse;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 60%;
+    }
+
+    .hero-title {
+        font-weight: 900;
+        font-size: 3.2rem;
+        margin-bottom: 1rem;
+        letter-spacing: -1.5px;
+        line-height: 1.1;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.95;
+        line-height: 1.6;
+        font-weight: 300;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .hero-illustration {
+        position: relative;
+        z-index: 2;
+        font-size: 8rem;
+        text-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        animation: floatOrb 5s ease-in-out infinite;
+    }
+
+    /* ----- GLASS CARDS 2.0 (3D HOLOGRAPHIC) ----- */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 24px;
+        padding: 2.5rem;
+        transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(255,255,255,0.5);
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Shimmer effect */
+    .glass-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        transform: skewX(-25deg);
+        transition: all 0.75s;
+    }
+
+    .glass-card:hover::before {
+        left: 200%;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08), inset 0 0 0 2px rgba(255,255,255,1);
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .card-icon-wrapper {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    .glass-card:hover .card-icon-wrapper {
+        transform: scale(1.15) rotate(8deg);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .card-title-dash {
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #0f172a;
+        margin-bottom: 0.8rem;
+        letter-spacing: -0.5px;
+    }
+
+    .card-desc-dash {
+        color: #64748b;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+        font-weight: 400;
+    }
+
+    .card-action {
+        font-weight: 700;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: gap 0.3s ease;
+    }
+
+    .glass-card:hover .card-action {
+        gap: 0.8rem;
+    }
+
+    /* Icon Gradients */
+    .icon-users { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); color: #4f46e5; }
+    .icon-dersler { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #16a34a; }
+    .icon-odevler { background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%); color: #ca8a04; }
+    .icon-teslimler { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); color: #ea580c; }
+    .icon-notlar { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); color: #db2777; }
+    .icon-sinav { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); color: #475569; }
+
+    /* ----- SECTION HEADERS ----- */
+    .section-title {
+        font-weight: 900;
+        color: #0f172a;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1.8rem;
+        letter-spacing: -0.5px;
+    }
+
+    /* ----- STUDENT TIMELINE ----- */
+    .timeline-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 1.8rem;
+        margin-bottom: 1.2rem;
+        border-left: 6px solid #3b82f6;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-top: 1px solid rgba(255,255,255,0.5);
+        border-right: 1px solid rgba(255,255,255,0.5);
+        border-bottom: 1px solid rgba(255,255,255,0.5);
+    }
+    
+    .timeline-card:hover {
+        transform: translateX(10px) scale(1.01);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        background: white;
+    }
+    
+    .timeline-card.overdue {
+        border-left-color: #ef4444;
+        background: linear-gradient(90deg, rgba(254, 242, 242, 0.9) 0%, rgba(255, 255, 255, 0.9) 100%);
+    }
+
+    /* ----- MODERN TABLE ----- */
+    .modern-table-wrapper {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+        padding: 2rem;
+        margin-bottom: 3rem;
+        border: 1px solid rgba(0,0,0,0.02);
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 0.8rem;
+    }
+
+    .table-modern th {
+        color: #94a3b8;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1.5px;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid #f8fafc;
+    }
+
+    .table-modern td {
+        padding: 1.2rem 1.5rem;
+        background: #f8fafc;
+        vertical-align: middle;
+        color: #334155;
+        transition: all 0.2s;
+    }
+
+    .table-modern tr td:first-child { border-radius: 16px 0 0 16px; }
+    .table-modern tr td:last-child { border-radius: 0 16px 16px 0; }
+
+    .table-modern tr:hover td {
+        background: #f1f5f9;
+        transform: scale(1.01);
+    }
+
+    /* MODERN BADGES */
+    .badge-modern {
+        padding: 0.6em 1.2em;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .badge-soft-danger { background: #fee2e2; color: #ef4444; }
+    .badge-soft-warning { background: #fef3c7; color: #d97706; }
+    .badge-soft-success { background: #dcfce7; color: #16a34a; }
+    .badge-soft-info { background: #e0f2fe; color: #0284c7; }
+    .badge-soft-primary { background: #e0e7ff; color: #4f46e5; }
+    
+</style>
+
+<!-- HERO SECTION -->
+<div class="hero-banner">
+    <div class="orb-1"></div>
+    <div class="orb-2"></div>
+    
+    <div class="hero-content">
+        <h1 class="hero-title">Hoş Geldiniz, @ad! 👋</h1>
+        <p class="hero-subtitle">
+            @(Session["UserId"] == null
+                ? "Devam etmek için giriş yapın ve size özel kontrol panelinize erişin."
+                : $"{rol} rolüyle giriş yaptınız. Tüm platform araçlarınıza ve istatistiklerinize aşağıdan anında erişebilirsiniz.")
+        </p>
+        @if (Session["UserId"] == null)
+        {
+            <div class="mt-4">
+                <a class="btn btn-light btn-lg px-5 py-3 fw-bold text-primary shadow rounded-pill" href="@Url.Action("Login","Account")">Hemen Giriş Yap</a>
+            </div>
+        }
+    </div>
+    
+    @if (Session["UserId"] != null)
+    {
+        <div class="hero-illustration">
+            @if (isStudent) { <i class="fa-solid fa-graduation-cap"></i> }
+            else if (isTeacher) { <i class="fa-solid fa-chalkboard-user"></i> }
+            else { <i class="fa-solid fa-shield-halved"></i> }
+        </div>
+    }
+</div>
+
+@if (Session["UserId"] != null)
+{
+    <!-- STUDENT SPECIFIC DASHBOARD -->
+    if (isStudent)
+    {
+        <!-- Unsubmitted Assignments Timeline -->
+        if (unsubmittedAssignments.Any())
+        {
+            <h4 class="section-title"><i class="fa-solid fa-clock text-warning fs-3"></i> Acil Bekleyen Ödevler</h4>
+            <div class="mb-5">
+                @foreach (var item in unsubmittedAssignments)
+                {
+                    var isOverdue = DateTime.Now > item.SonTeslimTarihi;
+                    var timeRemaining = (item.SonTeslimTarihi - DateTime.Now).TotalHours;
+                    string timeDisplay;
+                    string badgeClass;
+
+                    if (isOverdue)
+                    {
+                        timeDisplay = "Süresi Geçti!";
+                        badgeClass = "badge-soft-danger";
+                    }
+                    else if (timeRemaining < 24)
+                    {
+                        timeDisplay = $"{(int)timeRemaining} saat kaldı";
+                        badgeClass = "badge-soft-danger";
+                    }
+                    else if (timeRemaining < 72)
+                    {
+                        timeDisplay = $"{(int)(timeRemaining / 24)} gün kaldı";
+                        badgeClass = "badge-soft-warning";
+                    }
+                    else
+                    {
+                        timeDisplay = $"{(int)(timeRemaining / 24)} gün kaldı";
+                        badgeClass = "badge-soft-info";
+                    }
+
+                    <div class="timeline-card @(isOverdue ? "overdue" : "")">
+                        <div>
+                            <h5 class="fw-bolder mb-2 text-dark fs-4">@item.Baslik</h5>
+                            <p class="text-secondary mb-1"><i class="fa-solid fa-book-open me-2"></i> @(item.Dersler?.DersAdi ?? "Bilinmiyor")</p>
+                            <small class="text-muted fw-semibold"><i class="fa-regular fa-calendar-xmark me-1"></i> Son Teslim: @item.SonTeslimTarihi.ToString("dd MMMM yyyy HH:mm")</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge-modern @badgeClass d-inline-block mb-3 fs-6">@timeDisplay</span>
+                            <br />
+                            @if (!isOverdue)
+                            {
+                                <a href="@Url.Action("Submit", "Odevler", new { id = item.OdevID })" class="btn btn-primary fw-bold px-4 py-2 shadow rounded-pill">
+                                    Hemen Teslim Et <i class="fa-solid fa-arrow-right ms-2"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-light fw-bold px-4 py-2 text-danger rounded-pill" disabled>Süre Doldu</button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-dashboard shadow-sm mb-5" style="border-radius: 20px; padding: 2rem;">
+                <i class="fa-solid fa-check-circle text-success" style="font-size: 3rem;"></i>
+                <div class="ms-4">
+                    <h5 class="fw-bolder mb-1 text-success fs-3">Harika İş! 🎉</h5>
+                    <p class="mb-0 text-success opacity-75 fs-5">Şu anda teslim etmeniz gereken herhangi bir ödev bulunmamaktadır. Tüm görevlerinizi tamamladınız!</p>
+                </div>
+            </div>
+        }
+
+        <!-- TOPSIS Prioritized Assignments -->
+        if (prioritizedAssignments.Any())
+        {
+            <h4 class="section-title"><i class="fa-solid fa-brain text-primary fs-3"></i> Yapay Zeka Odak Planlaması (TOPSIS)</h4>
+            <div class="modern-table-wrapper">
+                <div class="table-responsive">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;" class="text-center">Sıra</th>
+                                <th>Ödev Başlığı</th>
+                                <th>Ders</th>
+                                <th class="text-center">Öncelik Skoru</th>
+                                <th class="text-center">Kalan Süre</th>
+                                <th class="text-center">Zorluk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int rank = 1; }
+                            @foreach (var item in prioritizedAssignments)
+                            {
+                                var timeRemaining = item.TimeRemainingHours;
+                                string priorityBadgeClass = item.PriorityScore >= 70 ? "badge-soft-danger" : (item.PriorityScore >= 40 ? "badge-soft-warning" : "badge-soft-info");
+                                string timeBadgeClass = timeRemaining < 24 ? "badge-soft-danger" : (timeRemaining < 72 ? "badge-soft-warning" : "badge-soft-success");
+                                string timeDisplay = timeRemaining < 24 ? $"{(int)timeRemaining} saat" : $"{(int)(timeRemaining / 24)} gün";
+                                
+                                string difficultyText = "Orta";
+                                switch (item.Difficulty)
+                                {
+                                    case 1: difficultyText = "Çok Kolay"; break;
+                                    case 2: difficultyText = "Kolay"; break;
+                                    case 3: difficultyText = "Orta"; break;
+                                    case 4: difficultyText = "Zor"; break;
+                                    case 5: difficultyText = "Çok Zor"; break;
+                                }
+
+                                <tr>
+                                    <td class="text-center fw-900 fs-4 @(rank <= 3 ? "text-danger" : "text-muted")">#@rank</td>
+                                    <td>
+                                        <div class="fw-bolder text-dark fs-5 mb-1">@item.Assignment.Baslik</div>
+                                        <div class="text-muted" style="font-size: 0.9rem;">@(item.Assignment.Aciklama?.Length > 55 ? item.Assignment.Aciklama.Substring(0, 55) + "..." : item.Assignment.Aciklama)</div>
+                                    </td>
+                                    <td class="fw-bold text-secondary">@(item.Assignment.Dersler?.DersAdi ?? "Bilinmiyor")</td>
+                                    <td class="text-center"><span class="badge-modern @priorityBadgeClass fs-6">@item.PriorityScore.ToString("F1")</span></td>
+                                    <td class="text-center"><span class="badge-modern @timeBadgeClass fs-6">@timeDisplay</span></td>
+                                    <td class="text-center"><span class="badge-modern badge-soft-primary fs-6">@difficultyText</span></td>
+                                </tr>
+                                rank++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+
+    <!-- QUICK LINKS (ALL ROLES) -->
+    <h4 class="section-title mt-5"><i class="fa-solid fa-layer-group text-primary fs-3"></i> Hızlı Erişim Paneli</h4>
+    <div class="dashboard-grid">
+        @if (!isStudent)
+        {
+            <a href="@Url.Action("Index","Users")" class="glass-card">
+                <div class="card-icon-wrapper icon-users">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3 class="card-title-dash">Kullanıcı Yönetimi</h3>
+                <p class="card-desc-dash">Öğrencileri, öğretmenleri ve yöneticileri ekleyin, düzenleyin veya rollerini güncelleyin.</p>
+                <div class="card-action text-primary">Yönetime Git <i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        }
+
+        <a href="@Url.Action("Index","Dersler")" class="glass-card">
+            <div class="card-icon-wrapper icon-dersler">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <h3 class="card-title-dash">Dersler</h3>
+            <p class="card-desc-dash">Platformdaki açık dersleri, ders içeriklerini ve eğitmen bilgilerini detaylıca görüntüleyin.</p>
+            <div class="card-action text-success">Dersleri İncele <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="@Url.Action("Index","Odevler")" class="glass-card">
+            <div class="card-icon-wrapper icon-odevler">
+                <i class="fa-solid fa-file-pen"></i>
+            </div>
+            <h3 class="card-title-dash">Ödevler</h3>
+            <p class="card-desc-dash">Derslere bağlı olarak verilen ödevleri, içeriklerini ve teslim tarihini detaylı şekilde takip edin.</p>
+            <div class="card-action text-warning">Ödevlere Git <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="@Url.Action("Index","Teslimler")" class="glass-card">
+            <div class="card-icon-wrapper icon-teslimler">
+                <i class="fa-solid fa-inbox"></i>
+            </div>
+            <h3 class="card-title-dash">Teslimler</h3>
+            <p class="card-desc-dash">Öğrenciler tarafından gönderilen ödev teslimlerini, dosyaları ve durumlarını anlık inceleyin.</p>
+            <div class="card-action text-danger">Teslimleri Gör <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="@Url.Action("Index","Notlar")" class="glass-card">
+            <div class="card-icon-wrapper icon-notlar">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <h3 class="card-title-dash">Notlandırma</h3>
+            <p class="card-desc-dash">Ödev teslimleri üzerinden verilen notları, başarı durumlarını ve geri bildirimleri inceleyin.</p>
+            <div class="card-action" style="color: #db2777;">Notları İncele <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <a href="@Url.Action("Index","SinavSonuclari")" class="glass-card">
+            <div class="card-icon-wrapper icon-sinav">
+                <i class="fa-solid fa-square-poll-vertical"></i>
+            </div>
+            <h3 class="card-title-dash">Sınav Sonuçları</h3>
+            <p class="card-desc-dash">Vize ve final sınav puanlarınızı, harf notlarınızı ve genel ortalamalarınızı kolayca görüntüleyin.</p>
+            <div class="card-action" style="color: #475569;">Sonuçlara Git <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+    </div>
+}

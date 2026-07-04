@@ -1,0 +1,430 @@
+@model EduSmart.Models.LoginViewModel
+@{
+    Layout = null;
+    ViewBag.Title = "Giriş Yap";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - EduSmart</title>
+    @Styles.Render("~/Content/css")
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-color: #f8fafc;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            overflow: hidden; /* Prevent scrolling during animations */
+        }
+
+        .login-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Left side - Branding/Image */
+        .login-branding {
+            flex: 1.2;
+            background: linear-gradient(135deg, #0f172a 0%, #312e81 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset -20px 0 50px rgba(0,0,0,0.2);
+        }
+
+        /* Particle container */
+        #tsparticles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 80%;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-logo-icon {
+            font-size: 5.5rem;
+            margin-bottom: 1.5rem;
+            background: -webkit-linear-gradient(#a5b4fc, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 15px rgba(99, 102, 241, 0.4));
+        }
+
+        .brand-title {
+            font-weight: 800;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+            color: #ffffff;
+        }
+
+        .brand-subtitle {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* Right side - Form */
+        .login-form-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background-color: var(--bg-color);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .login-form-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; right: -50%; bottom: -50%;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.05) 0%, transparent 60%);
+            z-index: -1;
+            pointer-events: none;
+            animation: pulse-bg 15s infinite alternate;
+        }
+
+        .login-form-box {
+            width: 100%;
+            max-width: 440px;
+            background: white;
+            padding: 3rem 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02);
+            position: relative;
+            z-index: 10;
+        }
+
+        .form-header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .form-header h2 {
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-size: 2.2rem;
+            letter-spacing: -0.5px;
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* Form Controls */
+        .gsap-form-item {
+            /* Handled by GSAP dynamically to prevent invisible form if script fails */
+        }
+
+        .form-floating > label {
+            padding: 1rem 1.2rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            height: auto;
+            border: 2px solid #e2e8f0;
+            background-color: #f8fafc;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+        
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .btn-login {
+            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin-top: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            color: #ffffff !important;
+            display: block;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.5);
+            color: #ffffff;
+        }
+
+        .validation-summary-errors {
+            background: #fef2f2;
+            color: #ef4444;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .validation-summary-errors ul {
+            margin-bottom: 0;
+            padding-left: 1.5rem;
+        }
+
+        .alert-flash {
+            background: #eff6ff;
+            color: #3b82f6;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            border-left: 4px solid #3b82f6;
+        }
+
+        @@keyframes pulse-bg {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .login-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+            body, html {
+                overflow: auto;
+            }
+            .login-branding {
+                flex: none;
+                padding: 4rem 2rem;
+                min-height: 40vh;
+            }
+            .brand-logo-icon {
+                font-size: 4rem;
+            }
+            .brand-title {
+                font-size: 2.5rem;
+            }
+            .brand-content {
+                padding: 2rem;
+            }
+            .login-form-box {
+                padding: 2rem 1.5rem;
+                box-shadow: none;
+                background: transparent;
+            }
+            .login-form-wrapper {
+                align-items: flex-start;
+                padding-top: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- Left Branding Section -->
+        <div class="login-branding">
+            <div id="tsparticles"></div>
+            <div class="brand-content gsap-brand">
+                <i class="fa-solid fa-graduation-cap brand-logo-icon"></i>
+                <h1 class="brand-title">EduSmart</h1>
+                <p class="brand-subtitle">Eğitim süreçlerinizi akıllı, verimli ve modern bir şekilde yönetin. Geleceğin eğitim platformuna hoş geldiniz.</p>
+            </div>
+        </div>
+
+        <!-- Right Form Section -->
+        <div class="login-form-wrapper">
+            <div class="login-form-box">
+                <div class="form-header gsap-form-item">
+                    <h2>Hoş Geldiniz</h2>
+                    <p>Devam etmek için giriş yapın</p>
+                </div>
+
+                @if (TempData["Flash"] != null)
+                {
+                    <div class="alert-flash gsap-form-item">
+                        <i class="fa-solid fa-circle-info me-2"></i> @TempData["Flash"]
+                    </div>
+                }
+
+                @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "needs-validation" }))
+                {
+                    @Html.AntiForgeryToken()
+                    
+                    if (!ViewData.ModelState.IsValid)
+                    {
+                        @Html.ValidationSummary(true, "", new { @class = "validation-summary-errors gsap-form-item" })
+                    }
+
+                    <div class="form-floating mb-4 position-relative gsap-form-item">
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", id="emailInput", placeholder = "ornek@email.com", type = "email" })
+                        <label for="emailInput"><i class="fa-regular fa-envelope me-2"></i>E-posta Adresi</label>
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small mt-1 d-block font-weight-bold" })
+                    </div>
+
+                    <div class="form-floating mb-4 position-relative gsap-form-item">
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", id="passwordInput", placeholder = "Şifreniz" })
+                        <label for="passwordInput"><i class="fa-solid fa-lock me-2"></i>Şifre</label>
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small mt-1 d-block font-weight-bold" })
+                    </div>
+
+                    <div class="gsap-form-item">
+                        <button type="submit" class="btn btn-primary btn-login w-100">
+                            Sisteme Giriş <i class="fa-solid fa-arrow-right-to-bracket ms-2"></i>
+                        </button>
+                    </div>
+                }
+                
+                <div class="mt-4 text-center gsap-form-item">
+                    <p class="text-muted small">
+                        Hesabınız yok mu? <br/>
+                        <span style="color: var(--primary-color); font-weight: 600;">Lütfen okul yöneticinizle iletişime geçin.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    
+    <!-- Animation Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initialize tsParticles (Constellation Network effect)
+            try {
+                tsParticles.load("tsparticles", {
+                    fpsLimit: 60,
+                    particles: {
+                        number: {
+                            value: 60,
+                            density: { enable: true, value_area: 800 }
+                        },
+                        color: { value: "#a5b4fc" },
+                        links: {
+                            enable: true,
+                            color: "#6366f1",
+                            distance: 150,
+                            opacity: 0.3,
+                            width: 1
+                        },
+                        move: {
+                            enable: true,
+                            speed: 1,
+                            direction: "none",
+                            random: true,
+                            straight: false,
+                            outModes: "out"
+                        },
+                        size: {
+                            value: { min: 1, max: 3 },
+                            random: true
+                        },
+                        opacity: {
+                            value: 0.5,
+                            random: false
+                        }
+                    },
+                    interactivity: {
+                        events: {
+                            onHover: { enable: true, mode: "grab" },
+                            onClick: { enable: true, mode: "push" }
+                        },
+                        modes: {
+                            grab: { distance: 140, links: { opacity: 0.8 } },
+                            push: { quantity: 4 }
+                        }
+                    },
+                    detectRetina: true,
+                    background: {
+                        color: "transparent"
+                    }
+                });
+            } catch (e) {
+                console.error("tsParticles failed to load: ", e);
+            }
+
+            // 2. GSAP Entrance Animations
+            try {
+                // Animate branding content
+                gsap.from(".brand-logo-icon", { duration: 1.2, y: -50, opacity: 0, ease: "back.out(1.7)", delay: 0.2 });
+                gsap.from(".brand-title", { duration: 1, x: -30, opacity: 0, ease: "power3.out", delay: 0.5 });
+                gsap.from(".brand-subtitle", { duration: 1, opacity: 0, ease: "power2.out", delay: 0.8 });
+
+                // Animate form elements stagger
+                gsap.from(".gsap-form-item", {
+                    duration: 0.8,
+                    y: 20,
+                    opacity: 0,
+                    stagger: 0.15,
+                    ease: "power3.out",
+                    delay: 0.4
+                });
+            } catch (e) {
+                console.error("GSAP failed to load: ", e);
+            }
+        });
+    </script>
+</body>
+</html>

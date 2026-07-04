@@ -1,0 +1,191 @@
+@model EduSmart.Models.Teslimler
+@{
+    ViewBag.Title = "Teslim Düzenle";
+}
+
+<style>
+    .form-container {
+        max-width: 650px;
+        margin: 2rem auto;
+        animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @@keyframes slideUp {
+        0% { transform: translateY(30px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .glass-form-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255,255,255,0.6);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .glass-form-card::before {
+        content: '';
+        position: absolute;
+        top: -50px; right: -50px;
+        width: 150px; height: 150px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .form-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        color: #3b82f6;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem auto;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.15);
+    }
+
+    .form-title {
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+    }
+
+    /* Modern Inputs */
+    .form-label {
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.8rem 1.2rem;
+        font-size: 1rem;
+        color: #1e293b;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        background: white;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .form-group-modern {
+        margin-bottom: 1.8rem;
+    }
+
+    /* Buttons */
+    .btn-submit {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        color: white;
+        font-weight: 700;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        width: 100%;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-cancel {
+        color: #64748b;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 1rem;
+        transition: color 0.2s;
+    }
+    
+    .btn-cancel:hover {
+        color: #0f172a;
+    }
+</style>
+
+<div class="form-container">
+    <div class="glass-form-card">
+        <div class="form-header">
+            <div class="form-icon">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            <h2 class="form-title">Teslimi Düzenle</h2>
+            <p class="text-secondary">Öğrenci teslim detaylarını güncelleyin.</p>
+        </div>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger small mb-3 fw-bold" })
+            @Html.HiddenFor(m => m.TeslimID)
+
+            <div class="form-group-modern">
+                @Html.Label("OdevID", "Ödev", new { @class = "form-label" })
+                @Html.DropDownList("OdevID", null, "-- Ödev Seçin --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.OdevID, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+            </div>
+
+            <div class="form-group-modern">
+                @Html.Label("OgrenciID", "Öğrenci", new { @class = "form-label" })
+                @Html.DropDownList("OgrenciID", null, "-- Öğrenci Seçin --", new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.OgrenciID, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+            </div>
+
+            <div class="form-group-modern">
+                @Html.LabelFor(m => m.IcerikMetni, "İçerik", new { @class = "form-label" })
+                @Html.TextAreaFor(m => m.IcerikMetni, new { @class = "form-control", rows = 3 })
+                @Html.ValidationMessageFor(m => m.IcerikMetni, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+            </div>
+
+            <div class="form-group-modern">
+                @Html.LabelFor(m => m.DosyaYolu, "Dosya Yolu", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.DosyaYolu, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.DosyaYolu, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group-modern">
+                    @Html.LabelFor(m => m.TeslimTarihi, "Teslim Tarihi", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.TeslimTarihi, "{0:yyyy-MM-ddTHH:mm}", new { @class = "form-control", type = "datetime-local" })
+                    @Html.ValidationMessageFor(m => m.TeslimTarihi, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+                </div>
+                <div class="col-md-6 form-group-modern">
+                    @Html.LabelFor(m => m.Durum, "Durum", new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.Durum, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.Durum, "", new { @class = "text-danger small fw-semibold mt-1 d-block" })
+                </div>
+            </div>
+
+            <div class="text-center mt-2">
+                <button type="submit" class="btn btn-submit">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Değişiklikleri Kaydet
+                </button>
+                <br />
+                <a href="@Url.Action("Index")" class="btn-cancel">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Listeye Dön
+                </a>
+            </div>
+        }
+    </div>
+</div>

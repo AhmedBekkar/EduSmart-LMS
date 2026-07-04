@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - EduSmart</title>
+    @Styles.Render("~/Content/css")
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+    @Scripts.Render("~/bundles/modernizr")
+
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --sidebar-bg: #0f172a; /* Deeper Slate */
+            --sidebar-bg-end: #1e1b4b; /* Deep Indigo */
+            --sidebar-hover: rgba(255, 255, 255, 0.08);
+            --sidebar-active-bg: linear-gradient(90deg, rgba(79, 70, 229, 0.85) 0%, rgba(124, 58, 237, 0.85) 100%);
+            --sidebar-border: rgba(255, 255, 255, 0.05);
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --body-bg: #f8fafc; /* Lighter, cleaner background */
+            --header-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--body-bg);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ----- SIDEBAR ----- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(165deg, var(--sidebar-bg) 0%, var(--sidebar-bg-end) 100%);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1000;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-right: 1px solid var(--sidebar-border);
+            overflow: hidden;
+        }
+
+        /* Decorative Background Glow in Sidebar */
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Collapsed State */
+        body.sidebar-collapsed .sidebar {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-brand {
+            padding: 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-icon-wrapper {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4f46e5 0%, #818cf8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .brand-icon-wrapper::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+            transform: rotate(45deg);
+        }
+
+        .brand-icon-wrapper i {
+            color: white;
+            font-size: 1.3rem;
+            z-index: 1;
+        }
+
+        .sidebar-brand .brand-text {
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+            color: white;
+            display: flex;
+            align-items: baseline;
+        }
+        
+        .brand-text .text-light-weight {
+            font-weight: 400;
+            color: #94a3b8;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 1rem;
+            flex-grow: 1;
+            overflow-y: auto;
+            /* Hide scrollbar */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            z-index: 1;
+            position: relative;
+        }
+        .sidebar-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-category {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: 0 0 1rem 1.25rem;
+        }
+
+        .nav-item-dashboard {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link-dashboard {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1.25rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid transparent;
+        }
+
+        .nav-link-dashboard::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 0;
+            width: 4px;
+            background: #818cf8;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+
+        .nav-link-dashboard i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-link-dashboard:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateX(4px);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link-dashboard:hover i {
+            transform: scale(1.15);
+            color: #818cf8;
+        }
+        
+        .nav-link-dashboard:hover::before {
+            height: 20px;
+            opacity: 1;
+        }
+
+        .nav-link-dashboard.active {
+            color: white;
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.15) 0%, transparent 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            font-weight: 600;
+        }
+
+        .nav-link-dashboard.active::before {
+            height: 60%;
+            opacity: 1;
+            background: #4f46e5;
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.8);
+        }
+
+        .nav-link-dashboard.active i {
+            color: #818cf8;
+            text-shadow: 0 0 15px rgba(129, 140, 248, 0.5);
+        }
+
+        /* ----- SIGNALR CHAT WIDGET ----- */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            max-height: 500px;
+        }
+
+        .chat-widget.collapsed {
+            max-height: 60px;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .chat-header.flash {
+            animation: pulse-primary 1s;
+        }
+
+        @@keyframes pulse-primary {
+            0% { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); }
+            50% { background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%); }
+            100% { background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); }
+        }
+
+        .chat-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ccc;
+            display: inline-block;
+        }
+
+        .status-dot.connected {
+            background-color: #10b981; /* green */
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        }
+
+        .status-dot.disconnected {
+            background-color: #ef4444; /* red */
+        }
+
+        .chat-body {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f8fafc;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @@keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chat-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #4f46e5;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .chat-bubble {
+            background: white;
+            padding: 10px 14px;
+            border-radius: 0 16px 16px 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            max-width: 85%;
+        }
+
+        .chat-author {
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .chat-text {
+            font-size: 0.9rem;
+            color: #1e293b;
+            word-wrap: break-word;
+        }
+
+        .chat-time {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .chat-input-area input {
+            border-radius: 20px 0 0 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .chat-input-area input:focus {
+            box-shadow: none;
+            border-color: #4f46e5;
+        }
+
+        .chat-input-area button {
+            border-radius: 0 20px 20px 0;
+        }
+
+        /* ----- MAIN CONTENT ----- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: margin-left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Collapsed State for Main Content */
+        body.sidebar-collapsed .main-content {
+            margin-left: 0;
+        }
+
+        /* ----- TOP HEADER ----- */
+        .top-header {
+            width: 100%;
+            height: 75px;
+            background: var(--header-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .toggle-btn:hover {
+            background: #f1f5f9;
+            color: #4f46e5;
+            transform: scale(1.05);
+        }
+        
+        .toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        .header-title h4 {
+            margin: 0;
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 1.3rem;
+            letter-spacing: -0.3px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .user-info {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-right: 0.2rem;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 0.95rem;
+            letter-spacing: -0.2px;
+        }
+
+        .user-avatar-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4f46e5;
+            font-size: 1.2rem;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.15);
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background-color: #10b981;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        /* ----- GLOBAL SEARCH ----- */
+        .global-search {
+            flex: 2;
+            max-width: 500px;
+            margin: 0 2rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .global-search .search-input {
+            width: 100%;
+            height: 42px;
+            background: #f1f5f9;
+            border: 1px solid transparent;
+            border-radius: 20px;
+            padding: 0 1rem 0 2.8rem;
+            font-size: 0.9rem;
+            color: #334155;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .global-search .search-input:focus {
+            background: white;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .global-search .search-icon {
+            position: absolute;
+            left: 1rem;
+            color: #94a3b8;
+            font-size: 1rem;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        .global-search .search-input:focus ~ .search-icon {
+            color: #4f46e5;
+        }
+
+        .global-search .search-shortcut {
+            position: absolute;
+            right: 0.5rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #64748b;
+            pointer-events: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: #4f46e5;
+            font-weight: 600;
+            background: #e0e7ff;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-logout {
+            background: #fff1f2;
+            color: #f43f5e;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(244, 63, 94, 0.05);
+        }
+
+        .btn-logout:hover {
+            background: #f43f5e;
+            color: white;
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3);
+            color: white;
+        }
+
+        /* ----- CONTENT WRAPPER ----- */
+        .content-wrapper {
+            padding: 2rem;
+            flex-grow: 1;
+        }
+
+        .app-footer {
+            padding: 1.5rem 2rem;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* RESPONSIVE */
+        @@media (max-width: 991px) {
+            body:not(.sidebar-collapsed) .sidebar {
+                transform: translateX(0);
+            }
+            body.sidebar-collapsed .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* ----- NOTIFICATIONS SYSTEM ----- */
+        .notification-dropdown {
+            position: relative;
+            margin-right: 1.5rem;
+        }
+        .notification-btn {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .notification-btn:hover {
+            background: rgba(79, 70, 229, 0.2);
+            transform: scale(1.05);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            display: none; /* hidden by default */
+        }
+        .notification-badge.active {
+            display: flex;
+            animation: pulse-red 2s infinite;
+        }
+        @@keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .notification-menu {
+            position: absolute;
+            top: 120%;
+            right: -10px; /* Align near profile */
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            z-index: 1050;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            transform-origin: top right;
+            animation: dropdown-anim 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .notification-menu.show {
+            display: flex;
+        }
+        @@keyframes dropdown-anim {
+            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .notif-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+        .notif-header h6 { margin: 0; font-weight: 700; color: #1e293b; }
+        .notif-mark-read {
+            font-size: 0.8rem;
+            color: #4f46e5;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .notif-mark-read:hover { text-decoration: underline; }
+        
+        .notif-body {
+            max-height: 350px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        /* scrollbar for notif-body */
+        .notif-body::-webkit-scrollbar { width: 5px; }
+        .notif-body::-webkit-scrollbar-track { background: transparent; }
+        .notif-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        .notif-item {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            gap: 1rem;
+            transition: background 0.2s;
+            position: relative;
+        }
+        .notif-item:hover { background: #f8fafc; }
+        .notif-item.unread { background: #f0fdf4; }
+        .notif-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #10b981;
+        }
+        .notif-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .notif-content { flex: 1; min-width: 0; }
+        .notif-title { font-weight: 600; font-size: 0.85rem; color: #1e293b; margin-bottom: 0.2rem; }
+        .notif-msg { font-size: 0.8rem; color: #64748b; line-height: 1.4; margin-bottom: 0.3rem; }
+        .notif-time { font-size: 0.7rem; color: #94a3b8; }
+        .notif-empty { padding: 2rem; text-align: center; color: #94a3b8; font-size: 0.9rem; }
+
+        /* Custom alert styling */
+        .alert-dashboard {
+            border-radius: 12px;
+            border: none;
+            background: #eff6ff;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            font-weight: 500;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* ----- DATATABLES EXPORT BUTTONS & STYLING ----- */
+        div.dt-buttons {
+            margin-bottom: 1rem;
+        }
+        .dt-button.btn {
+            background-color: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #475569 !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+            padding: 0.4rem 0.8rem !important;
+            transition: all 0.2s ease-in-out !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+        .dt-button.btn:hover {
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #334155 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
+        }
+        .dt-button.buttons-pdf { color: #dc2626 !important; }
+        .dt-button.buttons-excel { color: #16a34a !important; }
+        .dt-button.buttons-print { color: #2563eb !important; }
+        .dt-button.buttons-copy { color: #4f46e5 !important; }
+        
+        /* ----- DATATABLES BOTTOM SECTION (INFO & PAGINATION) ----- */
+        .dataTables_wrapper .dataTables_info {
+            padding-top: 1.25rem !important;
+            color: #64748b !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate {
+            padding-top: 1rem !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .pagination {
+            margin-bottom: 0;
+            gap: 0.35rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .page-item .page-link {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            color: #475569;
+            font-weight: 600;
+            padding: 0.5rem 0.9rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            margin: 0; /* Override BS default */
+        }
+
+        .dataTables_wrapper .dataTables_paginate .page-item.active .page-link {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+            color: white !important;
+            border-color: transparent !important;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+            transform: translateY(-2px);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .page-item:not(.active):not(.disabled) .page-link:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+        }
+
+        .dataTables_wrapper .dataTables_paginate .page-item.disabled .page-link {
+            color: #94a3b8;
+            background-color: #f8fafc;
+            border-color: #f1f5f9;
+            opacity: 0.8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        /* Fallback for non-bootstrap mode if any */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+            background: white !important;
+            font-weight: 600 !important;
+            color: #475569 !important;
+            padding: 0.5rem 0.9rem !important;
+            margin-left: 0.35rem !important;
+            transition: all 0.25s ease !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current, 
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+            color: white !important;
+            border-color: transparent !important;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25) !important;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button:not(.current):not(.disabled):hover {
+            background: #f1f5f9 !important;
+            color: #4f46e5 !important;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.3rem 0.6rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .dataTables_wrapper .dataTables_filter input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+    </style>
+</head>
+<body class="sidebar-expanded">
+    @{
+        var isSignedIn = Session["UserId"] != null;
+        var signedInName = Session["UserName"] as string ?? "Misafir";
+        var role = Session["UserRole"] as string ?? string.Empty;
+        var isStudent = role.Equals("Ogrenci", StringComparison.OrdinalIgnoreCase);
+        var isTeacher = role.Equals("Ogretmen", StringComparison.OrdinalIgnoreCase);
+        var isAdmin = role.Equals("Yonetici", StringComparison.OrdinalIgnoreCase);
+
+        // Helper to determine active link
+        string controller = ViewContext.RouteData.Values["controller"] as string ?? "";
+        string action = ViewContext.RouteData.Values["action"] as string ?? "";
+        
+        string GetActiveStatus(string cName)
+        {
+            return controller.Equals(cName, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+        }
+    }
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <a class="sidebar-brand" href="@Url.Action("Index", "Home")">
+            <div class="brand-icon-wrapper">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="brand-text">Edu<span class="text-light-weight">Smart</span></div>
+        </a>
+
+        @if (isSignedIn)
+        {
+            <nav class="sidebar-nav">
+                <div class="nav-category">Ana Menü</div>
+                
+                <div class="nav-item-dashboard">
+                    <a href="@Url.Action("Index", "Home")" class="nav-link-dashboard @GetActiveStatus("Home")">
+                        <i class="fa-solid fa-house-chimney"></i> Ana Sayfa
+                    </a>
+                </div>
+                
+                <div class="nav-item-dashboard">
+                    <a href="@Url.Action("Index", "Analytics")" class="nav-link-dashboard @GetActiveStatus("Analytics")">
+                        <i class="fa-solid fa-chart-pie"></i> İstatistikler
+                    </a>
+                </div>
+                
+                @if (!isStudent)
+                {
+                    <div class="nav-item-dashboard">
+                        <a href="@Url.Action("Index", "Users")" class="nav-link-dashboard @GetActiveStatus("Users")">
+                            <i class="fa-solid fa-users"></i> Kullanıcılar
+                        </a>
+                    </div>
+                }
+                
+                <div class="nav-item-dashboard">
+                    <a href="@Url.Action("Index", "Dersler")" class="nav-link-dashboard @GetActiveStatus("Dersler")">
+                        <i class="fa-solid fa-book-open"></i> Dersler
+                    </a>
+                </div>
+                
+                <div class="nav-item-dashboard">
+                    <a href="@Url.Action("Index", "Kayitlar")" class="nav-link-dashboard @GetActiveStatus("Kayitlar")">
+                        <i class="fa-solid fa-graduation-cap"></i> Kayıtlar
+                    </a>
+                </div>
+                
+                <div class="nav-item-dashboard">
+                    <a href="@Url.Action("Index", "Odevler")" class="nav-link-dashboard @GetActiveStatus("Odevler")">
+                        <i class="fa-solid fa-file-pen"></i> Ödevler
+                    </a>
+                </div>
+                
+                @if (!isStudent)
+                {
+                    <div class="nav-item-dashboard">
+                        <a href="@Url.Action("Index", "Teslimler")" class="nav-link-dashboard @GetActiveStatus("Teslimler")">
+                            <i class="fa-solid fa-inbox"></i> Teslimler
+                        </a>
+                    </div>
+                }
+                
+                <div class="nav-item-dashboard">
+                    <a href="@Url.Action("Index", "Notlar")" class="nav-link-dashboard @GetActiveStatus("Notlar")">
+                        <i class="fa-solid fa-star"></i> Notlar
+                    </a>
+                </div>
+                
+                <div class="nav-item-dashboard">
+                    <a href="@Url.Action("Index", "SinavSonuclari")" class="nav-link-dashboard @GetActiveStatus("SinavSonuclari")">
+                        <i class="fa-solid fa-square-poll-vertical"></i> Sınav Sonuçları
+                    </a>
+                </div>
+                
+                @if (!isStudent)
+                {
+                    <div class="nav-item-dashboard">
+                        <a href="@Url.Action("Index", "RiskAnalizi")" class="nav-link-dashboard @GetActiveStatus("RiskAnalizi")">
+                            <i class="fa-solid fa-chart-line"></i> Risk Analizi
+                        </a>
+                    </div>
+                }
+            </nav>
+        }
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- TOP HEADER -->
+        <header class="top-header">
+            <div class="header-left">
+                <button class="toggle-btn" id="sidebarToggle" title="Menüyü Aç/Kapat">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
+                <div class="header-title">
+                    <h4 class="d-none d-lg-block">@ViewBag.Title</h4>
+                </div>
+            </div>
+
+            <div class="global-search d-none d-md-flex">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" class="search-input" placeholder="Ders, Kullanıcı veya İçerik Ara...">
+                <div class="search-shortcut">Ctrl K</div>
+            </div>
+
+            <div class="user-profile d-flex align-items-center">
+                @if (isSignedIn)
+                {
+                    <!-- NOTIFICATIONS -->
+                    <div class="notification-dropdown">
+                        <button class="notification-btn" id="notifToggle">
+                            <i class="fa-solid fa-bell"></i>
+                            <span class="notification-badge" id="notifBadge">0</span>
+                        </button>
+                        <div class="notification-menu" id="notifMenu">
+                            <div class="notif-header">
+                                <h6>İldirimler</h6>
+                                <span class="notif-mark-read" id="notifMarkAllRead">Hepsini Okundu İşaretle</span>
+                            </div>
+                            <div class="notif-body" id="notifBody">
+                                <!-- Notifications injected here via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-info">
+                        <span class="user-name">@signedInName</span>
+                        <span class="user-role">@(string.IsNullOrWhiteSpace(role) ? "Misafir" : role)</span>
+                    </div>
+                    <div class="user-avatar-wrapper">
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <span class="status-dot"></span>
+                    </div>
+                    <a href="@Url.Action("Logout", "Account")" class="btn-logout ms-2" title="Çıkış Yap">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Login", "Account")" class="btn-login">
+                        <i class="fa-solid fa-user me-2"></i> Giriş Yap
+                    </a>
+                }
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <div class="content-wrapper">
+            @if (TempData["Flash"] != null)
+            {
+                <div class="alert alert-dashboard mb-4">
+                    <i class="fa-solid fa-circle-info fs-5"></i>
+                    @TempData["Flash"]
+                </div>
+            }
+
+            @RenderBody()
+        </div>
+
+        <!-- SIGNALR FLOATING CHAT WIDGET -->
+        <div id="chatWidget" class="chat-widget collapsed">
+            <div class="chat-header" id="chatHeader">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-messages text-white"></i>
+                    <h6 class="mb-0 fw-bold text-white">EduSmart Live Chat</h6>
+                </div>
+                <div class="chat-actions">
+                    <span id="chatConnectionStatus" class="status-dot disconnected" title="Bağlantı Bekleniyor..."></span>
+                    <button id="toggleChatBtn" class="btn btn-sm text-white border-0"><i class="fa-solid fa-chevron-up"></i></button>
+                </div>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message system-msg text-center my-3">
+                        <small class="text-muted"><i class="fa-solid fa-shield-check me-1"></i> Global sohbet odasına hoş geldiniz.</small>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="input-group">
+                        <input type="text" id="chatInput" class="form-control" placeholder="Bir mesaj yazın..." autocomplete="off">
+                        <button class="btn btn-primary" id="chatSendBtn" type="button"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /SIGNALR WIDGET -->
+
+        <footer class="app-footer">
+            &copy; @DateTime.Now.Year EduSmart — Yeni Nesil Eğitim Yönetim Sistemi
+        </footer>
+    </main>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    
+    <!-- SignalR Required Scripts -->
+    <script src="~/Scripts/jquery.signalR-2.4.3.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+
+    <!-- DataTables & Plugins -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const body = document.body;
+
+            // Load saved state from localStorage
+            const sidebarState = localStorage.getItem('sidebarState');
+            
+            // Default on mobile is collapsed, on desktop is expanded
+            if (window.innerWidth <= 991) {
+                body.classList.add('sidebar-collapsed');
+            } else {
+                if (sidebarState === 'collapsed') {
+                    body.classList.add('sidebar-collapsed');
+                } else {
+                    body.classList.remove('sidebar-collapsed');
+                }
+            }
+
+            // Toggle functionality
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    body.classList.toggle('sidebar-collapsed');
+                    
+                    // Save state
+                    if (window.innerWidth > 991) {
+                        if (body.classList.contains('sidebar-collapsed')) {
+                            localStorage.setItem('sidebarState', 'collapsed');
+                        } else {
+                            localStorage.setItem('sidebarState', 'expanded');
+                        }
+                    }
+                });
+            }
+
+            // Auto-collapse on small screens if resized
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 991) {
+                    body.classList.add('sidebar-collapsed');
+                } else {
+                    const state = localStorage.getItem('sidebarState');
+                    if (state !== 'collapsed') {
+                        body.classList.remove('sidebar-collapsed');
+                    }
+                }
+            });
+
+            // --- GLOBAL SEARCH FUNCTIONALITY ---
+            const searchInput = document.querySelector('.search-input');
+            
+            // Ctrl+K or Cmd+K to focus search
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    if (searchInput) {
+                        searchInput.focus();
+                    }
+                }
+            });
+
+            // Live filtering of tables and cards
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    const targetItems = document.querySelectorAll('.smart-table tbody tr, .table-modern tbody tr, .course-card');
+                    
+                    targetItems.forEach(item => {
+                        const itemText = item.textContent.toLowerCase();
+                        if (itemText.includes(searchTerm)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+
+        // --- SIGNALR CHAT LOGIC ---
+        $(function () {
+            // Widget Toggle Logic
+            $('#chatHeader').click(function(e) {
+                if($(e.target).closest('button').length === 0) {
+                    $('#chatWidget').toggleClass('collapsed');
+                    $('#toggleChatBtn i').toggleClass('fa-chevron-up fa-chevron-down');
+                }
+            });
+            
+            $('#toggleChatBtn').click(function() {
+                $('#chatWidget').toggleClass('collapsed');
+                $('#toggleChatBtn i').toggleClass('fa-chevron-up fa-chevron-down');
+            });
+
+            // SignalR Setup
+            var chat = $.connection.chatHub;
+            
+            if(chat) {
+                // Client method to receive messages
+                chat.client.broadcastMessage = function (name, role, avatar, message, time) {
+                    var roleBadge = role === 'OGRETMEN' ? '<span class="badge bg-primary ms-1" style="font-size:0.6rem;">Öğrt</span>' : 
+                                  (role === 'YONETICI' ? '<span class="badge bg-danger ms-1" style="font-size:0.6rem;">Yön</span>' : '');
+                                  
+                    var msgHtml = `
+                        <div class="chat-message incoming">
+                            <div class="chat-avatar">${avatar}</div>
+                            <div class="chat-bubble">
+                                <div class="chat-author">${name} ${roleBadge}</div>
+                                <div class="chat-text">${message}</div>
+                                <div class="chat-time">${time}</div>
+                            </div>
+                        </div>
+                    `;
+                    $('#chatMessages').append(msgHtml);
+                    
+                    // Auto scroll to bottom
+                    var chatDiv = document.getElementById("chatMessages");
+                    chatDiv.scrollTop = chatDiv.scrollHeight;
+                    
+                    // Play subtle notification sound if message is incoming
+                    // Creating an audio element dynamically to ensure it works across browsers
+                    try {
+                        var audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                        audio.volume = 0.2;
+                        audio.play();
+                    } catch(e) { }
+
+                    // If widget is collapsed, pop it up a bit or flash it
+                    if($('#chatWidget').hasClass('collapsed')) {
+                        $('#chatHeader').addClass('flash');
+                        setTimeout(() => $('#chatHeader').removeClass('flash'), 1000);
+                    }
+                };
+
+                chat.client.userConnected = function(name) {
+                    $('#chatMessages').append(`<div class="chat-message system-msg text-center my-2"><small class="text-muted">${name} katıldı.</small></div>`);
+                };
+                
+                chat.client.userDisconnected = function(name) {
+                    $('#chatMessages').append(`<div class="chat-message system-msg text-center my-2"><small class="text-muted">${name} ayrıldı.</small></div>`);
+                };
+
+                // Notification Client Method
+                chat.client.receiveNotification = function(notification) {
+                    var currentUserRole = '@Html.Raw(Session["UserRole"] ?? "")';
+                    var currentUserIdStr = '@Html.Raw(Session["UserId"] ?? "")';
+                    
+                    var isTarget = false;
+                    if(notification.UserId && notification.UserId.toString() === currentUserIdStr) {
+                        isTarget = true;
+                    } else if (!notification.UserId && (notification.Role === 'All' || notification.Role === currentUserRole)) {
+                        isTarget = true;
+                    }
+                    
+                    if(isTarget) {
+                        renderSingleNotification(notification, true);
+                        updateBadgeCount(1);
+                        // Play notification sound
+                        try {
+                            var audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+                            audio.volume = 0.2;
+                            audio.play();
+                        } catch(e) { }
+                    }
+                };
+
+                // Start connection
+                $.connection.hub.start().done(function () {
+                    $('#chatConnectionStatus').removeClass('disconnected').addClass('connected').attr('title', 'Bağlandı');
+                    
+                    var currentUser = '@Html.Raw(Session["UserName"] ?? "Misafir")';
+                    var currentRole = '@Html.Raw(Session["UserRole"] ?? "")';
+                    
+                    chat.server.connectUser(currentUser);
+                    
+                    // Send button click
+                    $('#chatSendBtn').click(function () {
+                        sendMessage();
+                    });
+                    
+                    // Enter key to send
+                    $('#chatInput').keypress(function (e) {
+                        if (e.which == 13) {
+                            sendMessage();
+                        }
+                    });
+                    
+                    function sendMessage() {
+                        var msg = $('#chatInput').val();
+                        if(msg.trim().length > 0) {
+                            chat.server.sendMessage(currentUser, currentRole, msg);
+                            $('#chatInput').val('').focus();
+                        }
+                    }
+                }).fail(function(e) {
+                    console.error("SignalR connection error: " + e);
+                    $('#chatConnectionStatus').removeClass('connected').addClass('disconnected').attr('title', 'Bağlantı Hatası');
+                });
+            }
+        });
+        // --- DATATABLES INITIALIZATION ---
+        $(document).ready(function () {
+            $('.smart-table, .table-modern').each(function() {
+                // Prevent double initialization
+                if (!$.fn.DataTable.isDataTable(this)) {
+                    $(this).DataTable({
+                        dom: '<"d-flex justify-content-between align-items-center mb-3"Bf>rt<"d-flex justify-content-between align-items-center mt-3"ip>',
+                        buttons: [
+                            {
+                                extend: 'copyHtml5',
+                                text: '<i class="fa-solid fa-copy me-1"></i> Kopyala',
+                                className: 'btn'
+                            },
+                            {
+                                extend: 'excelHtml5',
+                                text: '<i class="fa-solid fa-file-excel me-1"></i> Excel',
+                                className: 'btn buttons-excel'
+                            },
+                            {
+                                extend: 'pdfHtml5',
+                                text: '<i class="fa-solid fa-file-pdf me-1"></i> PDF',
+                                className: 'btn buttons-pdf',
+                                orientation: 'landscape',
+                                pageSize: 'A4'
+                            },
+                            {
+                                extend: 'print',
+                                text: '<i class="fa-solid fa-print me-1"></i> Yazdır',
+                                className: 'btn buttons-print'
+                            }
+                        ],
+                        language: {
+                            "emptyTable": "Tabloda herhangi bir veri mevcut değil",
+                            "info": "_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor",
+                            "infoEmpty": "Kayıt yok",
+                            "infoFiltered": "(_MAX_ kayıt içerisinden bulunan)",
+                            "infoThousands": ".",
+                            "lengthMenu": "Sayfada _MENU_ kayıt göster",
+                            "loadingRecords": "Yükleniyor...",
+                            "processing": "İşleniyor...",
+                            "search": "Ara:",
+                            "zeroRecords": "Eşleşen kayıt bulunamadı",
+                            "paginate": {
+                                "first": "İlk",
+                                "last": "Son",
+                                "next": "Sonraki",
+                                "previous": "Önceki"
+                            },
+                            "aria": {
+                                "sortAscending": ": artan sütun sıralamasını aktifleştir",
+                                "sortDescending": ": azalan sütun sıralamasını aktifleştir"
+                            }
+                        },
+                        pageLength: 10,
+                        responsive: true,
+                        order: [] // Don't sort automatically on load to preserve original sorting
+                    });
+                }
+            });
+        });
+
+        // --- NOTIFICATIONS UI LOGIC ---
+        $(document).ready(function() {
+            var notifBadge = $('#notifBadge');
+            var notifMenu = $('#notifMenu');
+            var notifToggle = $('#notifToggle');
+            var notifBody = $('#notifBody');
+            var unreadCount = 0;
+
+            // Toggle dropdown
+            notifToggle.click(function(e) {
+                e.stopPropagation();
+                notifMenu.toggleClass('show');
+            });
+
+            // Close when clicking outside
+            $(document).click(function(e) {
+                if (!$(e.target).closest('.notification-dropdown').length) {
+                    notifMenu.removeClass('show');
+                }
+            });
+
+            // Fetch initial notifications
+            $.get('@Url.Action("GetMyNotifications", "Notifications")', function(res) {
+                if(res.success && res.data) {
+                    notifBody.empty();
+                    if(res.data.length === 0) {
+                        notifBody.append('<div class="notif-empty">Hiç bildiriminiz yok.</div>');
+                    } else {
+                        res.data.forEach(function(n) {
+                            renderSingleNotification(n, false);
+                            if(!n.IsRead) unreadCount++;
+                        });
+                        updateBadgeCount(unreadCount);
+                    }
+                }
+            });
+
+            window.renderSingleNotification = function(n, prepend) {
+                if(notifBody.find('.notif-empty').length > 0) notifBody.empty();
+                
+                var date = new Date(parseInt(n.CreatedAt.substr(6)));
+                var timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + ' ' + date.toLocaleDateString('tr-TR');
+                
+                var iconHtml = n.Icon ? `<i class="${n.Icon}"></i>` : `<i class="fa-solid fa-bell text-primary"></i>`;
+                var bgClass = n.Icon && n.Icon.includes('text-danger') ? 'bg-danger-subtle text-danger' : 
+                              (n.Icon && n.Icon.includes('text-success') ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary');
+
+                var itemHtml = `
+                    <div class="notif-item ${n.IsRead ? '' : 'unread'}" data-id="${n.Id}">
+                        <div class="notif-icon ${bgClass}">
+                            ${iconHtml}
+                        </div>
+                        <div class="notif-content">
+                            <div class="notif-title">${n.Title}</div>
+                            <div class="notif-msg">${n.Message}</div>
+                            <div class="notif-time">${timeStr}</div>
+                        </div>
+                    </div>
+                `;
+
+                if(prepend) {
+                    notifBody.prepend(itemHtml);
+                } else {
+                    notifBody.append(itemHtml);
+                }
+            };
+
+            window.updateBadgeCount = function(count) {
+                var current = parseInt(notifBadge.text()) || 0;
+                var total = count === 1 ? current + 1 : count; // if count=1 assume incremental, else absolute
+                notifBadge.text(total);
+                if(total > 0) {
+                    notifBadge.addClass('active');
+                } else {
+                    notifBadge.removeClass('active');
+                }
+            };
+
+            // Mark single as read
+            notifBody.on('click', '.notif-item.unread', function() {
+                var item = $(this);
+                var id = item.data('id');
+                $.post('@Url.Action("MarkAsRead", "Notifications")', { id: id }, function(res) {
+                    if(res.success) {
+                        item.removeClass('unread');
+                        var current = parseInt(notifBadge.text()) - 1;
+                        notifBadge.text(current);
+                        if(current <= 0) notifBadge.removeClass('active');
+                    }
+                });
+            });
+
+            // Mark all read
+            $('#notifMarkAllRead').click(function() {
+                $.post('@Url.Action("MarkAllAsRead", "Notifications")', function(res) {
+                    if(res.success) {
+                        $('.notif-item.unread').removeClass('unread');
+                        notifBadge.text('0').removeClass('active');
+                    }
+                });
+            });
+        });
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

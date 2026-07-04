@@ -1,0 +1,289 @@
+@model IEnumerable<EduSmart.Models.Dersler>
+@{
+    ViewBag.Title = "Dersler";
+    var role = Session["UserRole"] as string ?? string.Empty;
+    var isStudent = role.Equals("Ogrenci", StringComparison.OrdinalIgnoreCase);
+}
+
+<style>
+    /* ----- ANIMATIONS & BACKGROUNDS ----- */
+    @@keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .page-header-banner {
+        background: linear-gradient(-45deg, #0ea5e9, #2563eb, #4f46e5);
+        background-size: 300% 300%;
+        animation: gradientShift 10s ease infinite;
+        border-radius: 20px;
+        padding: 2.5rem 3rem;
+        color: white;
+        margin-bottom: 3rem;
+        box-shadow: 0 15px 35px rgba(37, 99, 235, 0.25);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header-banner::after {
+        content: '';
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+    }
+
+    /* ----- COURSE GRID & CARDS (GLASSMORPHISM 3D) ----- */
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    .course-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03), inset 0 0 0 1px rgba(255,255,255,0.6);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .course-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08), inset 0 0 0 2px rgba(255,255,255,1);
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .course-banner {
+        height: 120px;
+        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .course-icon-badge {
+        width: 70px;
+        height: 70px;
+        background: white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #4f46e5;
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.15);
+        position: absolute;
+        bottom: -35px;
+        left: 24px;
+        border: 3px solid rgba(255,255,255,0.8);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .course-card:hover .course-icon-badge {
+        transform: scale(1.15) rotate(10deg);
+        box-shadow: 0 15px 30px rgba(79, 70, 229, 0.2);
+    }
+
+    .course-content {
+        padding: 3rem 1.5rem 1.5rem 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .course-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+    }
+
+    .instructor-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f1f5f9;
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 1.2rem;
+        width: fit-content;
+    }
+
+    .instructor-avatar {
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(135deg, #38bdf8, #3b82f6);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 800;
+    }
+
+    .course-desc {
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Actions Hover Reveal */
+    .course-actions {
+        display: flex;
+        gap: 0.5rem;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        padding-top: 1.2rem;
+        opacity: 0.7;
+        transform: translateY(5px);
+        transition: all 0.4s ease;
+    }
+
+    .course-card:hover .course-actions {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .btn-glass {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0,0,0,0.05);
+        font-weight: 700;
+        padding: 0.6rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    
+    .btn-glass:hover {
+        background: white;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        transform: translateY(-2px);
+    }
+
+    .btn-edit { color: #3b82f6; }
+    .btn-edit:hover { background: #eff6ff; border-color: #bfdbfe; }
+    
+    .btn-delete { color: #ef4444; }
+    .btn-delete:hover { background: #fef2f2; border-color: #fecaca; }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 30px;
+        border: 2px dashed rgba(148, 163, 184, 0.3);
+    }
+
+</style>
+
+<div class="page-header-banner">
+    <div style="position: relative; z-index: 2;">
+        <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold mb-3 shadow-sm">
+            <i class="fa-solid fa-graduation-cap me-1"></i> Akademi
+        </span>
+        <h1 class="fw-black mb-1" style="font-size: 2.5rem; letter-spacing: -1px; text-shadow: 0 4px 15px rgba(0,0,0,0.1);">Eğitim Kataloğu</h1>
+        <p class="mb-0 text-white-50 fs-5">Platformda sunulan tüm dersleri ve eğitmenleri keşfedin.</p>
+    </div>
+    @if (!isStudent)
+    {
+        <div style="position: relative; z-index: 2;">
+            <a class="btn btn-light btn-lg rounded-pill px-4 fw-bold text-primary shadow" href="@Url.Action("Create")">
+                <i class="fa-solid fa-plus me-2"></i> Yeni Ders Ekle
+            </a>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="fa-solid fa-folder-open text-muted mb-3" style="font-size: 4rem; opacity: 0.5;"></i>
+        <h3 class="fw-bold text-dark mb-2">Henüz ders bulunmuyor</h3>
+        <p class="text-secondary fs-5">Sisteme henüz herhangi bir ders eklenmemiş.</p>
+        @if (!isStudent)
+        {
+            <a href="@Url.Action("Create")" class="btn btn-primary rounded-pill px-4 py-2 mt-2 fw-bold">İlk Dersi Oluştur</a>
+        }
+    </div>
+}
+else
+{
+    <div class="course-grid">
+        @foreach (var item in Model)
+        {
+            <!-- Determine Icon based on course name keywords -->
+            var iconClass = "fa-book-open";
+            var bgClass = "linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)";
+            var iconColor = "#4f46e5";
+            
+            var lowerName = item.DersAdi.ToLower();
+            if (lowerName.Contains("zeka") || lowerName.Contains("yapay")) { iconClass = "fa-brain"; bgClass = "linear-gradient(135deg, #fef08a 0%, #fde047 100%)"; iconColor = "#ca8a04"; }
+            else if (lowerName.Contains("veri") || lowerName.Contains("sql")) { iconClass = "fa-database"; bgClass = "linear-gradient(135deg, #bbf7d0 0%, #86efac 100%)"; iconColor = "#16a34a"; }
+            else if (lowerName.Contains("yazılım") || lowerName.Contains("programlama")) { iconClass = "fa-laptop-code"; bgClass = "linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)"; iconColor = "#ea580c"; }
+            else if (lowerName.Contains("sistem") || lowerName.Contains("destek")) { iconClass = "fa-network-wired"; bgClass = "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)"; iconColor = "#475569"; }
+            
+            var egitmenAdi = item.Kullanicilar != null ? item.Kullanicilar.AdSoyad : "Atanmadı";
+            var egitmenBasHarf = egitmenAdi.Length > 0 && egitmenAdi != "Atanmadı" ? egitmenAdi.Substring(0, 1).ToUpper() : "?";
+
+            <div class="course-card">
+                <div class="course-banner" style="background: @bgClass;">
+                    <div class="course-icon-badge" style="color: @iconColor;">
+                        <i class="fa-solid @iconClass"></i>
+                    </div>
+                </div>
+                
+                <div class="course-content">
+                    <h3 class="course-title">@item.DersAdi</h3>
+                    
+                    <div class="instructor-badge">
+                        <div class="instructor-avatar">@egitmenBasHarf</div>
+                        <span>@egitmenAdi</span>
+                    </div>
+                    
+                    <p class="course-desc" title="@item.Aciklama">
+                        @(string.IsNullOrWhiteSpace(item.Aciklama) ? "Bu ders için henüz bir açıklama girilmemiş." : item.Aciklama)
+                    </p>
+                    
+                    @if (!isStudent)
+                    {
+                        <div class="course-actions">
+                            <a href="@Url.Action("Edit", new { id = item.DersID })" class="btn btn-glass btn-edit text-center text-decoration-none">
+                                <i class="fa-solid fa-pen-to-square me-1"></i> Düzenle
+                            </a>
+                            <a href="@Url.Action("Delete", new { id = item.DersID })" class="btn btn-glass btn-delete text-center text-decoration-none">
+                                <i class="fa-solid fa-trash me-1"></i> Sil
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

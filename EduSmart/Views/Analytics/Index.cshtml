@@ -1,0 +1,289 @@
+@model EduSmart.Controllers.AnalyticsDashboardViewModel
+
+@{
+    ViewBag.Title = "İstatistik Panosu (Analytics)";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .analytics-container {
+        padding: 1rem;
+        animation: fadeIn 0.6s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .metric-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: transform 0.3s;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    }
+
+    .metric-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .bg-gradient-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .bg-gradient-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .bg-gradient-green { background: linear-gradient(135deg, #10b981, #059669); }
+    .bg-gradient-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+    .metric-info h5 {
+        color: #64748b;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+
+    .metric-info h2 {
+        color: #0f172a;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -1px;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        margin-top: 2rem;
+        height: 400px;
+        position: relative;
+    }
+
+    .chart-title {
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+</style>
+
+<div class="analytics-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-chart-pie text-primary me-2"></i> İstatistik Panosu
+            </h2>
+            <p class="text-muted fw-bold">Platformdaki güncel veriler ve performans analizleri.</p>
+        </div>
+    </div>
+
+    <!-- Metrics Row -->
+    <div class="row g-4">
+        @if (!Model.IsStudent)
+        {
+            <div class="col-md-6 col-lg-3">
+                <div class="metric-card">
+                    <div class="metric-icon bg-gradient-blue">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="metric-info">
+                        <h5>Toplam Öğrenci</h5>
+                        <h2>@Model.TotalStudents</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="metric-card">
+                    <div class="metric-icon bg-gradient-purple">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <div class="metric-info">
+                        <h5>Toplam Öğretmen</h5>
+                        <h2>@Model.TotalTeachers</h2>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-6 col-lg-3">
+                <div class="metric-card">
+                    <div class="metric-icon bg-gradient-blue">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <div class="metric-info">
+                        <h5>Kayıtlı Derslerim</h5>
+                        <h2>@Model.TotalCourses</h2>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="col-md-6 col-lg-3">
+            <div class="metric-card">
+                <div class="metric-icon bg-gradient-green">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="metric-info">
+                    <h5>Ortalama Sınav</h5>
+                    <h2>@Model.AverageExamScore</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="metric-card">
+                <div class="metric-icon bg-gradient-orange">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <div class="metric-info">
+                    <h5>Ortalama Ödev</h5>
+                    <h2>@Model.AverageAssignmentScore</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="metric-card">
+                <div class="metric-icon" style="background: linear-gradient(135deg, #ec4899, #be185d);">
+                    <i class="fa-solid fa-check-double"></i>
+                </div>
+                <div class="metric-info">
+                    <h5>Teslim Oranı</h5>
+                    <h2>%@Model.SubmissionRate</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mt-2">
+        <div class="col-lg-8">
+            <div class="chart-card">
+                <h4 class="chart-title"><i class="fa-solid fa-chart-column text-primary"></i> 
+                    @(Model.IsStudent ? "Son Sınav Sonuçlarım" : "En Yüksek Ortalamalı İlk 5 Ders")
+                </h4>
+                <canvas id="mainBarChart"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-card">
+                <h4 class="chart-title"><i class="fa-solid fa-chart-donut text-success"></i> Performans Özeti</h4>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Data coming from Controller
+            var isStudent = @(Model.IsStudent.ToString().ToLower());
+            
+            var chartLabels = [];
+            var chartData = [];
+            
+            @if(Model.IsStudent && Model.RecentExamsData != null)
+            {
+                foreach(var item in Model.RecentExamsData)
+                {
+                    @:chartLabels.push("@Html.Raw(item.Label)");
+                    @:chartData.push(@item.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+            }
+            else if (!Model.IsStudent && Model.CourseAveragesData != null)
+            {
+                foreach(var item in Model.CourseAveragesData)
+                {
+                    @:chartLabels.push("@Html.Raw(item.Label)");
+                    @:chartData.push(@item.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+            }
+
+            // Fallback for empty data
+            if(chartLabels.length === 0) {
+                chartLabels = ['Veri Yok'];
+                chartData = [0];
+            }
+
+            // --- Bar Chart ---
+            var ctxBar = document.getElementById('mainBarChart').getContext('2d');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Ortalama Puan',
+                        data: chartData,
+                        backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // --- Doughnut Chart ---
+            var ctxPie = document.getElementById('pieChart').getContext('2d');
+            var avgExam = parseFloat('@Model.AverageExamScore'.replace(',', '.'));
+            var avgAssign = parseFloat('@Model.AverageAssignmentScore'.replace(',', '.'));
+            
+            new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sınav Ortalaması', 'Ödev Ortalaması', 'Kayıp Puan'],
+                    datasets: [{
+                        data: [avgExam, avgAssign, 100 - ((avgExam + avgAssign) / 2)],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(226, 232, 240, 0.8)'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    cutout: '70%'
+                }
+            });
+        });
+    </script>
+}
