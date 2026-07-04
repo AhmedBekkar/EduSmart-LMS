@@ -118,7 +118,7 @@ To fully understand how EduSmart integrates its modules, here are the primary sy
 ### Step 1: Clone the Repository
 Open your terminal and clone the repository:
 ```bash
-git clone https://github.com/your-username/EduSmart.git
+git clone https://github.com/AhmedBekkar/EduSmart.git
 cd EduSmart
 ```
 
