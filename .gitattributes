@@ -1,6 +1,9 @@
-
-*.html linguist-detectable=false
+*.html linguist-vendored
 *.js linguist-vendored
 *.css linguist-vendored
-Content/* linguist-vendored
-Scripts/* linguist-vendored
+*.scss linguist-vendored
+*.json linguist-vendored
+
+Scripts/** linguist-vendored
+Content/** linguist-vendored
+assets/** linguist-vendored
