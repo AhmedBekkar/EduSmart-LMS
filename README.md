@@ -118,7 +118,7 @@ To fully understand how EduSmart integrates its modules, here are the primary sy
 ### Step 1: Clone the Repository
 Open your terminal and clone the repository:
 ```bash
-git clone https://github.com/your-username/EduSmart.git
+git clone https://github.com/AhmedBekkar/EduSmart.git
 cd EduSmart
 ```
 
@@ -147,11 +147,11 @@ Navigate to the root of the web project and open `Web.config`. Update the `<conn
 4. Press `F5` to build and launch the application via IIS Express.
 
 ### Default Test Credentials
-| Role | Username | Password |
+| Role | Email | Password |
 | :--- | :--- | :--- |
-| **Admin** | `admin` | `admin123` |
-| **Teacher** | `teacher1` | `password` |
-| **Student** | `student1` | `password` |
+| **Admin** | `ali@edusmart.com` | `12345` |
+| **Teacher** | `ali@edusmart.com` | `12345` |
+| **Student** | `mehmet@ogr.com` | `12345` |
 
 *(Note: Passwords in the database are hashed using PBKDF2)*
 
@@ -161,15 +161,15 @@ Navigate to the root of the web project and open `Web.config`. Update the `<conn
 
 | Admin Dashboard | Analytics Dashboard | Users Management |
 | :---: | :---: | :---: |
-| ![Dashboard](docs/admin-dashboard.png) | ![Analytics](docs/analytics-dashboard.png) | ![Users](docs/users-management.png) |
+| ![Dashboard](EduSmart/docs/admin-dashboard.png) | ![Analytics](EduSmart/docs/analytics-dashboard.png) | ![Users](EduSmart/docs/users-management.png) |
 
 | Assignments | Risk Analysis | Add Assignment |
 | :---: | :---: | :---: |
-| ![Assignments](docs/assignments-list.png) | ![Risk](docs/risk-analysis.png) | ![Add](docs/add-assignment.png) |
+| ![Assignments](EduSmart/docs/assignments-list.png) | ![Risk](EduSmart/docs/risk-analysis.png) | ![Add](EduSmart/docs/add-assignment.png) |
 
 | Delete Modal | Exam Results & Chat | Login Page |
 | :---: | :---: | :---: |
-| ![Delete](docs/delete-assignment-modal.png) | ![Exam](docs/exam-results-chat.png) | ![Login](docs/login-page.png) |
+| ![Delete](EduSmart/docs/delete-assignment-modal.png) | ![Exam](EduSmart/docs/exam-results-chat.png) | ![Login](EduSmart/docs/login-page.png) |
 ---
 
 ## 📁 Project Structure
@@ -223,11 +223,4 @@ If you'd like to contribute, please fork the repository and make changes as you'
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
----
-
-## 📬 Contact
-
-**Ahmad** - [GitHub Profile](https://github.com/your-username) - your.email@example.com
-
-Project Link: [https://github.com/your-username/EduSmart](https://github.com/your-username/EduSmart)
 
