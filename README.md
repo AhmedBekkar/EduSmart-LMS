@@ -119,7 +119,7 @@ To fully understand how EduSmart integrates its modules, here are the primary sy
 Open your terminal and clone the repository:
 ```bash
 git clone https://github.com/AhmedBekkar/EduSmart-LMS.git
-cd EduSmart
+cd EduSmart-LMS
 ```
 
 ### Step 2: Restore the Database
