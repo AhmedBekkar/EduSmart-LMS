@@ -223,11 +223,4 @@ If you'd like to contribute, please fork the repository and make changes as you'
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
----
-
-## 📬 Contact
-
-**Ahmad** - [GitHub Profile](https://github.com/your-username) - your.email@example.com
-
-Project Link: [https://github.com/your-username/EduSmart](https://github.com/your-username/EduSmart)
 
