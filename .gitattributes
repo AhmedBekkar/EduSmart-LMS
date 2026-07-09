@@ -1,9 +1,0 @@
-*.html linguist-vendored
-*.js linguist-vendored
-*.css linguist-vendored
-*.scss linguist-vendored
-*.json linguist-vendored
-
-Scripts/** linguist-vendored
-Content/** linguist-vendored
-assets/** linguist-vendored
